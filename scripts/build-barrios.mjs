@@ -1,13 +1,24 @@
-// Genera web/lib/barrios.json: polígonos de los barrios cercanos al centro de Montevideo.
+// Genera supabase/barrios_seed.sql con los 62 barrios de Montevideo (polígonos simplificados).
 // Fuente: barrios de la Intendencia de Montevideo (datos abiertos), vía el espejo cecimargolis/mapas-montevideo.
-// Uso: node scripts/build-barrios.mjs
+// Uso: node scripts/build-barrios.mjs && supabase db query --linked -f supabase/barrios_seed.sql
+// El seed no pisa `enabled` de barrios ya cargados: las zonas con entrega se gestionan desde /admin.
 import { writeFileSync } from "node:fs";
 
 const SOURCE = "https://raw.githubusercontent.com/cecimargolis/mapas-montevideo/main/barrios.geojson";
-const VIEW = { w: -56.235, e: -56.07, s: -34.955, n: -34.82 }; // barrios que toquen esta ventana
-// Barrios con entrega, en el orden en que se muestran en la leyenda.
-const DELIVERY = ["POCITOS", "PUNTA CARRETAS", "PARQUE RODO", "PALERMO", "CORDON", "CENTRO", "TRES CRUCES", "BUCEO"];
-const LABELS = { "PARQUE RODO": "Parque Rodó", CORDON: "Cordón", POCITOS: "Pocitos", CENTRO: "Centro", BUCEO: "Buceo", "PUNTA CARRETAS": "Punta Carretas", PALERMO: "Palermo", "TRES CRUCES": "Tres Cruces" };
+// Zonas habilitadas solo la primera vez que se carga cada barrio.
+const INITIAL_ENABLED = ["POCITOS", "PUNTA CARRETAS", "PARQUE RODO", "PALERMO", "CORDON", "CENTRO", "TRES CRUCES", "BUCEO", "PQUE BATLLE VILLA DOLORES", "BARRIO SUR", "CIUDAD VIEJA"];
+const NAMES = {
+  "BANADOS DE CARRASCO": "Bañados de Carrasco", "CAPURRO BELLA VISTA": "Capurro - Bella Vista", "CASABO PAJAS BLANCAS": "Casabó - Pajas Blancas",
+  "CASTRO CASTELLANOS": "Castro - Castellanos", "COLON CENTRO Y NOROESTE": "Colón Centro y Noroeste", "COLON SURESTE ABAYUBA": "Colón Sureste - Abayubá",
+  CONCILIACION: "Conciliación", CORDON: "Cordón", "FLOR DE MARONAS": "Flor de Maroñas", ITUZAINGO: "Ituzaingó", "JARDINES DEL HIPODROMO": "Jardines del Hipódromo",
+  "LA PALOMA TOMKINSON": "La Paloma - Tomkinson", LARRANAGA: "Larrañaga", "LEZICA MELILLA": "Lezica - Melilla", MALVIN: "Malvín", "MALVIN NORTE": "Malvín Norte",
+  "MANGA TOLEDO CHICO": "Manga - Toledo Chico", "MARONAS PARQUE GUARANI": "Maroñas - Parque Guaraní", "MERCADO MODELO Y BOLIVAR": "Mercado Modelo - Bolívar",
+  "NUEVO PARIS": "Nuevo París", "PARQUE RODO": "Parque Rodó", "PENAROL LAVALLEJA": "Peñarol - Lavalleja", "PQUE BATLLE VILLA DOLORES": "Parque Batlle",
+  "PRADO NUEVA SAVONA": "Prado - Nueva Savona", "PUNTA RIELES BELLA ITALIA": "Punta de Rieles - Bella Italia", "TRES OMBUES PBLO VICTORIA": "Tres Ombúes - Pueblo Victoria",
+  UNION: "Unión", "VILLA ESPANOLA": "Villa Española", "VILLA GARCIA MANGA RURAL": "Villa García - Manga Rural", "VILLA MUNOZ RETIRO": "Villa Muñoz - Retiro",
+};
+const titleCase = (k) => k.toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase()).replace(/ De | Del | Y | La | Las /g, (m) => m.toLowerCase());
+const slug = (k) => k.toLowerCase().replace(/\s+/g, "-");
 
 const gj = await (await fetch(SOURCE)).json();
 
@@ -41,39 +52,28 @@ function centroid(ring) {
   return [x / (3 * a), y / (3 * a)];
 }
 
-// Colores: 0 lavanda, 1 durazno, 2 marrón suave. Dos barrios que se tocan nunca comparten color.
-const vertices = (f) => new Set((f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates).flatMap((p) => p[0].map((c) => c.map((v) => v.toFixed(4)).join())));
-const delivery = DELIVERY.map((k) => gj.features.find((f) => f.properties.nombre === k));
-if (delivery.includes(undefined)) throw new Error("Falta algún barrio de entrega en la fuente");
-const verts = delivery.map(vertices);
-const touches = (i, j) => [...verts[i]].some((v) => verts[j].has(v));
-const tones = [];
-delivery.forEach((_, i) => {
-  const used = new Set(tones.flatMap((t, j) => (touches(i, j) ? [t] : [])));
-  tones[i] = [0, 1, 2].find((t) => !used.has(t)) ?? 2;
+const polysOf = (f) => (f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates);
+const vertices = (f) => new Set(polysOf(f).flatMap((p) => p[0].map((c) => c.map((v) => v.toFixed(4)).join())));
+const verts = gj.features.map(vertices);
+const unknown = INITIAL_ENABLED.filter((k) => !gj.features.some((f) => f.properties.nombre === k));
+if (unknown.length) throw new Error(`Barrios inexistentes en la fuente: ${unknown}`);
+
+const q = (str) => `'${str.replaceAll("'", "''")}'`;
+const rows = gj.features.map((f, i) => {
+  const key = f.properties.nombre;
+  const polys = polysOf(f);
+  const biggest = polys.map((p) => p[0]).reduce((a, b) => (b.length > a.length ? b : a));
+  const neighbors = gj.features.flatMap((g, j) => (j !== i && [...verts[i]].some((v) => verts[j].has(v)) ? [slug(g.properties.nombre)] : []));
+  const geometry = { type: "MultiPolygon", coordinates: polys.map((p) => [simplify(p[0], 0.00003).map(round)]) };
+  return `(${q(slug(key))}, ${q(NAMES[key] ?? titleCase(key))}, $j$${JSON.stringify(geometry)}$j$::jsonb, $j$${JSON.stringify(round(centroid(biggest)))}$j$::jsonb, array[${neighbors.map(q).join(",")}]::text[], ${INITIAL_ENABLED.includes(key)})`;
 });
 
-const features = [];
-for (const f of gj.features) {
-  const polys = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
-  const rings = polys.map((p) => p[0]);
-  const inView = rings.some((r) => r.some(([lon, lat]) => lon > VIEW.w && lon < VIEW.e && lat > VIEW.s && lat < VIEW.n));
-  if (!inView) continue;
-  const key = f.properties.nombre;
-  const order = DELIVERY.indexOf(key);
-  const biggest = rings.reduce((a, b) => (b.length > a.length ? b : a));
-  features.push({
-    type: "Feature",
-    properties: { name: LABELS[key] ?? key, delivery: order >= 0, tone: order >= 0 ? tones[order] : null, order },
-    geometry: { type: "MultiPolygon", coordinates: polys.map((p) => [simplify(p[0], 0.00003).map(round)]) },
-    label: round(centroid(biggest)),
-  });
-}
-
-const missing = DELIVERY.filter((k) => !features.some((f) => f.properties.order === DELIVERY.indexOf(k)));
-if (missing.length) throw new Error(`Faltan barrios: ${missing}`);
-
-// "label" va dentro de properties para que MapLibre/Marker lo lea sin estructuras extra.
-const out = features.map(({ label, ...f }) => ({ ...f, properties: { ...f.properties, label } }));
-writeFileSync(new URL("../web/lib/barrios.json", import.meta.url), JSON.stringify({ type: "FeatureCollection", features: out }));
-console.log(out.length, "barrios;", out.filter((f) => f.properties.delivery).map((f) => f.properties.name).join(", "));
+writeFileSync(
+  new URL("../supabase/barrios_seed.sql", import.meta.url),
+  `-- Generado por scripts/build-barrios.mjs. No pisa \`enabled\` de barrios existentes.
+insert into barrios (id, name, geometry, label, neighbors, enabled) values
+${rows.join(",\n")}
+on conflict (id) do update set name = excluded.name, geometry = excluded.geometry, label = excluded.label, neighbors = excluded.neighbors;
+`,
+);
+console.log(rows.length, "barrios");

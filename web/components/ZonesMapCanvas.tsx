@@ -4,26 +4,25 @@ import * as maplibregl from "maplibre-gl";
 import type { LngLatBoundsLike } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef } from "react";
-import barrios from "@/lib/barrios.json";
+import type { Zones } from "@/lib/api";
 
 // Mapa base: OpenFreeMap (gratis, sin API key, datos de OpenStreetMap). Barrios: Intendencia de Montevideo.
 const STYLE = "https://tiles.openfreemap.org/styles/liberty";
-const AREA: LngLatBoundsLike = [[-56.26, -34.97], [-56.04, -34.8]]; // límite de paneo
+const AREA: LngLatBoundsLike = [[-56.5, -35.05], [-55.9, -34.65]]; // límite de paneo: todo el departamento
 
 maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
 const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-export default function ZonesMapCanvas() {
+export default function ZonesMapCanvas({ zones }: { zones: Zones }) {
   const el = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const [accent, highlight, ink] = [token("--accent"), token("--highlight"), token("--on-color")];
     const tones = [accent, highlight, ink]; // el 3er color (marrón) va más suave, ver fill-opacity
-    const delivery = barrios.features.filter((f) => f.properties.delivery);
 
     const bounds = new maplibregl.LngLatBounds();
-    delivery.forEach((f) => f.geometry.coordinates.forEach((poly) => poly[0].forEach((p) => bounds.extend(p as [number, number]))));
+    zones.features.forEach((f) => f.geometry.coordinates.forEach((poly) => poly[0].forEach((p) => bounds.extend(p as [number, number]))));
 
     const map = new maplibregl.Map({
       container: el.current!,
@@ -41,18 +40,17 @@ export default function ZonesMapCanvas() {
 
     map.on("load", () => {
       el.current?.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show"); // arranca cerrada
-      map.addSource("barrios", { type: "geojson", data: barrios as GeoJSON.FeatureCollection });
+      map.addSource("barrios", { type: "geojson", data: zones as GeoJSON.FeatureCollection });
       // Encima de toda la geometría del mapa base (calles, edificios) y por debajo de sus etiquetas de texto.
       const layers = map.getStyle().layers;
       const lastShape = layers.findLastIndex((l) => l.type !== "symbol");
       const firstLabel = layers.slice(lastShape + 1).find((l) => l.type === "symbol")?.id;
-      map.addLayer({ id: "barrios-context", type: "line", source: "barrios", filter: ["==", ["get", "delivery"], false], paint: { "line-color": ink, "line-opacity": 0.18, "line-width": 1, "line-dasharray": [2, 2] } }, firstLabel);
-      map.addLayer({ id: "barrios-fill", type: "fill", source: "barrios", filter: ["==", ["get", "delivery"], true], paint: { "fill-color": ["match", ["get", "tone"], 0, tones[0], 1, tones[1], tones[2]], "fill-opacity": ["match", ["get", "tone"], 2, 0.35, 0.6] } }, firstLabel);
-      map.addLayer({ id: "barrios-line", type: "line", source: "barrios", filter: ["==", ["get", "delivery"], true], paint: { "line-color": ink, "line-width": 2, "line-opacity": 0.8 } }, firstLabel);
+      map.addLayer({ id: "barrios-fill", type: "fill", source: "barrios", paint: { "fill-color": ["match", ["get", "tone"], 0, tones[0], 1, tones[1], tones[2]], "fill-opacity": ["match", ["get", "tone"], 2, 0.35, 0.6] } }, firstLabel);
+      map.addLayer({ id: "barrios-line", type: "line", source: "barrios", paint: { "line-color": ink, "line-width": 2, "line-opacity": 0.8 } }, firstLabel);
     });
 
     // Etiquetas HTML: usan las tipografías de la marca y no dependen de glifos del mapa base.
-    const markers = delivery.map((f) => {
+    const markers = zones.features.map((f) => {
       const label = document.createElement("span");
       label.textContent = f.properties.name;
       label.setAttribute("aria-hidden", "true");
@@ -64,7 +62,7 @@ export default function ZonesMapCanvas() {
       markers.forEach((m) => m.remove());
       map.remove();
     };
-  }, []);
+  }, [zones]);
 
   // El CSS de MapLibre fuerza position:relative en su contenedor (le gana a las utilidades de Tailwind),
   // por eso el contenedor llena a un padre absoluto con h-full en vez de ser absoluto él mismo.

@@ -2,11 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+import type { Zones } from "@/lib/api";
 
 // MapLibre pesa ~800 KB: se descarga recién cuando el mapa está por entrar en pantalla.
 const Canvas = dynamic(() => import("./ZonesMapCanvas"), { ssr: false });
 
-export function ZonesMap() {
+export function ZonesMap({ zones }: { zones: Zones }) {
   const box = useRef<HTMLDivElement>(null);
   const [near, setNear] = useState(false);
 
@@ -18,7 +19,7 @@ export function ZonesMap() {
 
   return (
     <div ref={box} className="relative aspect-[4/5] w-full sm:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-[28px] bg-muted">
-      {near && <Canvas />}
+      {near && <Canvas zones={zones} />}
     </div>
   );
 }

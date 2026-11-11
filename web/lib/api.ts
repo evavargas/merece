@@ -19,6 +19,13 @@ export const CATEGORIES: { id: Category; title: string; blurb: string }[] = [
   { id: "acompanar", title: "Para acompañar", blurb: "Para armar la merienda completa." },
 ];
 
+export type Zone = {
+  type: "Feature";
+  geometry: { type: "MultiPolygon"; coordinates: number[][][][] };
+  properties: { id: string; name: string; tone: number; label: [number, number] };
+};
+export type Zones = { type: "FeatureCollection"; features: Zone[] };
+
 export const INSTAGRAM_URL = "https://www.instagram.com/merece.singluten/";
 
 // Server-side: el navegador usa el rewrite de /api (next.config.ts).
@@ -28,6 +35,15 @@ export async function getProducts(): Promise<Product[] | null> {
   try {
     const res = await fetch(`${API_URL}/api/products`, { next: { revalidate: 30 } });
     return res.ok ? ((await res.json()) as Product[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getZones(): Promise<Zones | null> {
+  try {
+    const res = await fetch(`${API_URL}/api/barrios`, { next: { revalidate: 30 } });
+    return res.ok ? ((await res.json()) as Zones) : null;
   } catch {
     return null;
   }

@@ -31,10 +31,11 @@ design/     DESIGN.md, contexto del proyecto, logos y mockup original
 
 `web/` en Vercel (variable `API_URL`). `api/` en cualquier host Node (`npm run build -w api && npm start -w api`).
 
-## Mapa de zonas
+## Mapa y barrios
 
-Mapa interactivo con MapLibre sobre [OpenFreeMap](https://openfreemap.org) (gratis, sin API key, datos de OpenStreetMap) y los polígonos de barrios de la Intendencia de Montevideo (datos abiertos).
+La tabla `barrios` guarda los 63 barrios de Montevideo con su polígono. En `/admin` → **Barrios** se marcan los que tienen entrega y se guarda todo junto con **Actualizar**; el mapa y la leyenda de la landing muestran solo los marcados, y los colores se asignan para que dos barrios linderos nunca coincidan.
 
-- Las zonas con entrega son `DELIVERY` en `scripts/build-barrios.mjs`. Para cambiarlas: editar la lista y correr `node scripts/build-barrios.mjs`, que regenera `web/lib/barrios.json` (colores incluidos: dos barrios que se tocan no comparten color). La leyenda de la página lee ese mismo archivo.
-- El script baja los polígonos de un espejo en GitHub (`cecimargolis/mapas-montevideo`, sin licencia declarada); conviene confirmar la licencia de los datos de la Intendencia antes de lanzar.
+- Mapa interactivo con MapLibre sobre [OpenFreeMap](https://openfreemap.org) (gratis, sin API key, datos de OpenStreetMap).
+- Carga inicial: `node scripts/build-barrios.mjs && supabase db query --linked -f supabase/barrios_seed.sql` (no pisa lo ya habilitado). Los polígonos vienen de los barrios de la Intendencia de Montevideo, vía el espejo `cecimargolis/mapas-montevideo`, que no declara licencia: conviene confirmar la de la Intendencia antes de lanzar.
+- Migraciones: `supabase/migrations/0001…0003`; se aplican en orden con `supabase db query --linked -f <archivo>`.
 - El worker de MapLibre se copia a `web/public/maplibre/` en `predev`/`prebuild` (no se versiona).

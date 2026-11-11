@@ -75,6 +75,7 @@ function Login({ onDone }: { onDone: () => void }) {
 function Panel({ onLogout }: { onLogout: () => void }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState<"productos" | "barrios">("productos");
 
   // Cualquier 401 devuelve al login; el resto se muestra como mensaje.
   const guard = useCallback(async <T,>(fn: () => Promise<T>): Promise<T | undefined> => {
@@ -97,15 +98,29 @@ function Panel({ onLogout }: { onLogout: () => void }) {
   const replace = (p: Product) => setProducts((all) => all.map((x) => (x.id === p.id ? p : x)));
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <header className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="font-display text-4xl">Stock</h1>
-        <Button variant="outline" className="!min-h-11" onClick={async () => { await call("/api/auth/logout", { method: "POST" }); onLogout(); }}>
+    <div className="mx-auto flex min-h-dvh max-w-6xl flex-col md:flex-row">
+      <aside className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-border p-4 md:sticky md:top-0 md:h-dvh md:w-60 md:shrink-0 md:flex-col md:items-stretch md:border-b-0 md:border-r md:p-6">
+        <p className="font-display text-3xl md:mb-4">Merece</p>
+        <nav aria-label="Secciones" className="flex gap-2 md:flex-col">
+          {([["productos", "Productos"], ["barrios", "Barrios"]] as const).map(([id, label]) => (
+            <button key={id} onClick={() => setTab(id)} aria-current={tab === id ? "page" : undefined}
+              className={`min-h-11 cursor-pointer rounded-full px-5 text-left font-bold ${tab === id ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+              {label}
+            </button>
+          ))}
+        </nav>
+        <Button variant="outline" className="!min-h-11 ml-auto md:ml-0 md:mt-auto" onClick={async () => { await call("/api/auth/logout", { method: "POST" }); onLogout(); }}>
           Salir
         </Button>
-      </header>
+      </aside>
+      <main className="min-w-0 flex-1 px-4 py-8 md:px-8">
+        <h1 className="font-display mb-6 text-4xl">{tab === "productos" ? "Productos" : "Barrios"}</h1>
       {error && <p role="alert" className="mb-4 rounded-xl bg-muted p-3 text-destructive">{error}</p>}
 
+      {tab === "barrios" ? (
+        <Zones guard={guard} />
+      ) : (
+        <>
       <ul className="flex flex-col gap-3">
         {products.map((p) => (
           <Row
@@ -129,7 +144,10 @@ function Panel({ onLogout }: { onLogout: () => void }) {
         const created = await call<Product>("/api/products", json("POST", input));
         setProducts((all) => [...all, created]);
       })} />
+        </>
+      )}
     </main>
+    </div>
   );
 }
 
@@ -214,5 +232,73 @@ function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Cate
       <Button className="!min-h-11">Agregar</Button>
       {priceError && <p id="new-price-error" role="alert" className="text-sm text-destructive sm:col-span-full">{priceError}</p>}
     </form>
+  );
+}
+
+type Barrio = { id: string; name: string; enabled: boolean };
+
+// Una sola selección que se guarda al presionar "Actualizar" (no al marcar cada barrio).
+function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | undefined> }) {
+  const [barrios, setBarrios] = useState<Barrio[]>([]);
+  const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [query, setQuery] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    void guard(() => call<Barrio[]>("/api/barrios/all")).then((list) => {
+      if (!list) return;
+      const on = new Set(list.filter((b) => b.enabled).map((b) => b.id));
+      setBarrios(list);
+      setSaved(on);
+      setSelected(on);
+    });
+  }, [guard]);
+
+  const dirty = selected.size !== saved.size || [...selected].some((id) => !saved.has(id));
+  const norm = (t: string) => t.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  const shown = barrios.filter((b) => norm(b.name).includes(norm(query)));
+
+  const toggle = (id: string) => {
+    setDone(false);
+    setSelected((cur) => { const next = new Set(cur); if (!next.delete(id)) next.add(id); return next; });
+  };
+
+  async function update() {
+    setBusy(true);
+    const ok = await guard(() => call("/api/barrios", json("PUT", { enabled: [...selected] })));
+    if (ok) { setSaved(new Set(selected)); setDone(true); }
+    setBusy(false);
+  }
+
+  return (
+    <section aria-labelledby="zonas-titulo">
+      <h2 id="zonas-titulo" className="text-lg font-bold">Zonas con entrega</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Los barrios marcados aparecen en el mapa de la página. Los cambios se aplican al presionar Actualizar.</p>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+        <label className="flex flex-col gap-1.5 text-xs font-bold">
+          Buscar barrio
+          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ej: Pocitos" className={field} />
+        </label>
+        <Button className="!min-h-11" disabled={!dirty || busy} onClick={update}>{busy ? "Guardando…" : "Actualizar"}</Button>
+      </div>
+      <p role="status" className="mt-3 min-h-6 text-sm">
+        {done ? "Zonas actualizadas. El mapa de la página se renueva en hasta 30 segundos." : dirty ? "Hay cambios sin guardar." : `${selected.size} de ${barrios.length} barrios con entrega.`}
+      </p>
+
+      <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {shown.map((b) => (
+          <li key={b.id}>
+            <label className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-3 ${selected.has(b.id) ? "bg-accent text-on-color" : "bg-card"}`}>
+              <input type="checkbox" checked={selected.has(b.id)} onChange={() => toggle(b.id)} className="h-5 w-5 shrink-0 accent-[var(--primary)]" />
+              <span className="font-bold">{b.name}</span>
+            </label>
+          </li>
+        ))}
+        {shown.length === 0 && <li className="text-sm text-muted-foreground">No hay barrios con ese nombre.</li>}
+      </ul>
+    </section>
   );
 }

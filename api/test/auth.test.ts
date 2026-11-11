@@ -7,7 +7,7 @@ Object.assign(process.env, {
   ADMIN_PASSWORD: "clave-de-prueba",
   SESSION_SECRET: "s".repeat(32),
 });
-const { app } = await import("../src/app.ts");
+const { app } = await import("../src/app.js");
 
 const login = (password: string) =>
   app.request("/api/auth/login", {

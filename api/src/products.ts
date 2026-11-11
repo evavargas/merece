@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { requireAdmin } from "./auth.ts";
-import { BUCKET, imageUrl, supabase } from "./supabase.ts";
+import { requireAdmin } from "./auth.js";
+import { BUCKET, imageUrl, supabase } from "./supabase.js";
 
 const category = z.enum(["pasteleria", "a_pedido", "acompanar"]);
 

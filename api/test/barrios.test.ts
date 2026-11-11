@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 Object.assign(process.env, { SUPABASE_URL: "https://x.supabase.co", SUPABASE_SERVICE_ROLE_KEY: "k", ADMIN_PASSWORD: "clave-de-prueba", SESSION_SECRET: "s".repeat(32) });
-const { assignTones } = await import("../src/barrios.ts");
-const { app } = await import("../src/app.ts");
+const { assignTones } = await import("../src/barrios.js");
+const { app } = await import("../src/app.js");
 
 test("barrios linderos nunca comparten color", () => {
   // a-b-c forman un triángulo; d solo toca a

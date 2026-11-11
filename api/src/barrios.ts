@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { requireAdmin } from "./auth.ts";
-import { supabase } from "./supabase.ts";
+import { requireAdmin } from "./auth.js";
+import { supabase } from "./supabase.js";
 
 type Row = { id: string; name: string; geometry: unknown; label: [number, number]; neighbors: string[] };
 

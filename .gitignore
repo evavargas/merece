@@ -8,3 +8,4 @@ dist
 *.tsbuildinfo
 supabase/.temp
 web/public/maplibre
+.vercel

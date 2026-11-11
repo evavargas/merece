@@ -4,7 +4,7 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { sign, verify } from "hono/jwt";
 import { z } from "zod";
-import { env } from "./env.ts";
+import { env } from "./env.js";
 
 const COOKIE = "merece_session";
 const SESSION_SECONDS = 60 * 60 * 12;

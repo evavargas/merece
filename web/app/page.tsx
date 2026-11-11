@@ -3,6 +3,7 @@ import { Cup, Instagram } from "@/components/icons";
 import { Menu } from "@/components/Menu";
 import { Wordmark } from "@/components/Wordmark";
 import { ZonesMap } from "@/components/ZonesMap";
+import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { getProducts, getZones, INSTAGRAM_URL } from "@/lib/api";
 
 const STEPS = [
@@ -13,6 +14,20 @@ const STEPS = [
 
 const TONE_CLASS = ["bg-accent text-on-color", "bg-highlight text-on-color", "bg-foreground text-background"];
 
+// Datos estructurados para buscadores. Sin dirección (solo delivery) y sin afirmaciones de aptitud para celíacos.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Bakery",
+  name: "Merece",
+  description: SITE_DESCRIPTION,
+  url: SITE_URL,
+  image: `${SITE_URL}/opengraph-image.png`,
+  logo: `${SITE_URL}/icons/icon-512.png`,
+  telephone: "+59897905849",
+  areaServed: { "@type": "City", name: "Montevideo" },
+  sameAs: [INSTAGRAM_URL],
+};
+
 const section = "mx-auto w-full max-w-5xl px-6";
 const eyebrow = "font-hand text-2xl uppercase tracking-[0.12em]";
 const h2 = "font-display text-4xl leading-tight sm:text-5xl";
@@ -22,6 +37,7 @@ export default async function Home() {
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <header className={`${section} flex flex-wrap items-center justify-between gap-4 pt-6`}>
         <span className="font-display text-3xl leading-none">Merece</span>
         <a href={INSTAGRAM_URL} className={`${buttonClass("primary")} font-small !min-h-11 !px-5 text-[15px] font-extrabold`} aria-label="Instagram de Merece, @merece.singluten">

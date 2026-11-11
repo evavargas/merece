@@ -1,0 +1,7 @@
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
+
+// Una sola página pública: /admin no se indexa.
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [{ url: SITE_URL, changeFrequency: "daily", priority: 1 }];
+}

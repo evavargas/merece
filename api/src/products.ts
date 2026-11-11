@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { requireAdmin } from "./auth.js";
+import { revalidate } from "./revalidate.js";
 import { BUCKET, imageUrl, supabase } from "./supabase.js";
 
 const category = z.enum(["pasteleria", "a_pedido", "acompanar"]);
@@ -42,7 +43,7 @@ export const products = new Hono()
   .get("/", async (c) => {
     const { data, error } = await supabase().from("products").select("*").order("sort_order").order("name");
     if (error) return c.json({ error: "No se pudo leer el catálogo" }, 500);
-    c.header("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
+    c.header("Cache-Control", "no-store"); // la caché la maneja la web (revalidación por etiqueta); un CDN en el medio la dejaba desactualizada
     return c.json((data as Row[]).map(toDto));
   })
   .post("/", requireAdmin, async (c) => {
@@ -50,6 +51,7 @@ export const products = new Hono()
     if (!body.success) return c.json({ error: "Datos inválidos", issues: body.error.issues }, 400);
     const { data, error } = await supabase().from("products").insert(toColumns(body.data)).select().single();
     if (error) return c.json({ error: "No se pudo crear" }, 500);
+    await revalidate("products");
     return c.json(toDto(data as Row), 201);
   })
   .patch("/:id", requireAdmin, async (c) => {
@@ -62,6 +64,7 @@ export const products = new Hono()
     const { data, error } = await supabase().from("products").update(toColumns(patch)).eq("id", id.data).select().maybeSingle();
     if (error) return c.json({ error: "No se pudo actualizar" }, 500);
     if (!data) return c.json({ error: "No existe" }, 404);
+    await revalidate("products");
     return c.json(toDto(data as Row));
   })
   .delete("/:id", requireAdmin, async (c) => {
@@ -71,6 +74,7 @@ export const products = new Hono()
     if (error) return c.json({ error: "No se pudo borrar" }, 500);
     const path = (data as { image_path: string | null } | null)?.image_path;
     if (path) await supabase().storage.from(BUCKET).remove([path]);
+    await revalidate("products");
     return c.body(null, 204);
   })
   .put("/:id/image", requireAdmin, async (c) => {
@@ -98,5 +102,6 @@ export const products = new Hono()
     }
     const old = (current as { image_path: string | null }).image_path;
     if (old) await db.storage.from(BUCKET).remove([old]);
+    await revalidate("products");
     return c.json(toDto(data as Row));
   });

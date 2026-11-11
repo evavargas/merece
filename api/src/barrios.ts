@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { requireAdmin } from "./auth.js";
+import { revalidate } from "./revalidate.js";
 import { supabase } from "./supabase.js";
 
 type Row = { id: string; name: string; geometry: unknown; label: [number, number]; neighbors: string[] };
@@ -25,7 +26,7 @@ export const barrios = new Hono()
     if (error) return c.json({ error: "No se pudieron leer las zonas" }, 500);
     const rows = data as Row[];
     const tones = assignTones(rows);
-    c.header("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
+    c.header("Cache-Control", "no-store"); // la caché la maneja la web (revalidación por etiqueta); un CDN en el medio la dejaba desactualizada
     return c.json({
       type: "FeatureCollection",
       features: rows.map((r) => ({ type: "Feature", geometry: r.geometry, properties: { id: r.id, name: r.name, tone: tones.get(r.id), label: r.label } })),
@@ -51,5 +52,6 @@ export const barrios = new Hono()
 
     const { error } = await db.rpc("set_enabled_barrios", { ids });
     if (error) return c.json({ error: "No se pudo guardar" }, 500);
+    await revalidate("zones");
     return c.json({ ok: true, enabled: ids.length });
   });

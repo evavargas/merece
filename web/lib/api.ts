@@ -35,9 +35,12 @@ export const INSTAGRAM_URL = "https://www.instagram.com/merece.singluten/";
 // Server-side: el navegador usa el rewrite de /api (next.config.ts).
 const API_URL = process.env.API_URL ?? "http://localhost:4000";
 
+// Los cambios del admin invalidan la caché al instante (app/revalidate/route.ts); esto es solo la red de seguridad.
+const SAFETY_REVALIDATE = 3600;
+
 export async function getProducts(): Promise<Product[] | null> {
   try {
-    const res = await fetch(`${API_URL}/api/products`, { next: { revalidate: 30 } });
+    const res = await fetch(`${API_URL}/api/products`, { next: { revalidate: SAFETY_REVALIDATE, tags: ["products"] } });
     return res.ok ? ((await res.json()) as Product[]) : null;
   } catch {
     return null;
@@ -46,7 +49,7 @@ export async function getProducts(): Promise<Product[] | null> {
 
 export async function getZones(): Promise<Zones | null> {
   try {
-    const res = await fetch(`${API_URL}/api/barrios`, { next: { revalidate: 30 } });
+    const res = await fetch(`${API_URL}/api/barrios`, { next: { revalidate: SAFETY_REVALIDATE, tags: ["zones"] } });
     return res.ok ? ((await res.json()) as Zones) : null;
   } catch {
     return null;

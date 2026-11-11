@@ -2,6 +2,7 @@ import { buttonClass } from "@/components/Button";
 import { Cup, Instagram } from "@/components/icons";
 import { Menu } from "@/components/Menu";
 import { Wordmark } from "@/components/Wordmark";
+import { ZonesMap } from "@/components/ZonesMap";
 import { getProducts, INSTAGRAM_URL } from "@/lib/api";
 
 const STEPS = [
@@ -10,7 +11,7 @@ const STEPS = [
   ["Te lo llevamos", "Coordinamos el delivery y recibís tu pedido en casa."],
 ] as const;
 
-const ZONES = ["Pocitos", "Parque Rodó", "Cordón", "Centro", "Buceo"];
+const ZONES = ["Pocitos", "Parque Rodó", "Cordón", "Centro", "Buceo"]; // mismo orden que los colores del mapa
 
 const section = "mx-auto w-full max-w-5xl px-6";
 const eyebrow = "font-hand text-2xl uppercase tracking-[0.12em]";
@@ -72,15 +73,20 @@ export default async function Home() {
                 </li>
               ))}
             </ol>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-2.5">
-              <p className="mr-1.5 text-[15px] font-bold">Entregamos en:</p>
-              {ZONES.map((z, i) => (
-                <span key={z} className={`rounded-full px-4 py-1.5 text-sm font-medium text-on-color ${i % 2 ? "bg-highlight" : "bg-accent"}`}>
-                  {z}
-                </span>
-              ))}
+            <div className="mt-12 grid items-center gap-8 md:grid-cols-2">
+              <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
+                <h3 className="font-display text-3xl">Entregamos en</h3>
+                <ul className="flex flex-wrap justify-center gap-2.5 md:justify-start">
+                  {ZONES.map((z, i) => (
+                    <li key={z} className={`rounded-full px-4 py-1.5 text-sm font-medium text-on-color ${i % 2 ? "bg-highlight" : "bg-accent"}`}>
+                      {z}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-sm text-muted-foreground">¿Otra zona? Consultanos por Instagram.</p>
+              </div>
+              <ZonesMap />
             </div>
-            <p className="mt-3 text-center text-sm text-muted-foreground">¿Otra zona? Consultanos por Instagram.</p>
           </div>
         </section>
 

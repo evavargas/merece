@@ -8,7 +8,7 @@ import { env } from "./env.ts";
 
 const COOKIE = "merece_session";
 const SESSION_SECONDS = 60 * 60 * 12;
-const MAX_FAILS = 5;
+const MAX_FAILS = 10;
 const WINDOW_MS = 15 * 60 * 1000;
 
 // shortcut: contador en memoria por IP, se pierde al reiniciar y no se comparte entre instancias;

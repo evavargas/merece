@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/Button";
+import { OptionSelect } from "@/components/ui/select";
 import { CATEGORIES, type Category, type Product } from "@/lib/api";
 
 class Unauthorized extends Error {}
@@ -184,21 +185,24 @@ function Row({ product: p, onSave, onPhoto, onDelete }: {
 }
 
 function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Category; price: number | null; stock: number }) => Promise<unknown> }) {
+  const [category, setCategory] = useState<Category>("pasteleria");
+
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const f = new FormData(form);
     const price = String(f.get("price")).trim();
-    await onCreate({ name: String(f.get("name")), category: f.get("category") as Category, price: price === "" ? null : Number(price), stock: Number(f.get("stock") || 0) });
+    await onCreate({ name: String(f.get("name")), category, price: price === "" ? null : Number(price), stock: Number(f.get("stock") || 0) });
     form.reset();
   }
 
   return (
     <form onSubmit={submit} className="mt-8 grid gap-3 rounded-2xl bg-muted p-4 sm:grid-cols-[1fr_auto_6rem_5rem_auto] sm:items-end">
       <label className="flex flex-col text-xs font-bold">Nuevo producto<input name="name" required maxLength={80} className={field} placeholder="Nombre" /></label>
-      <label className="flex flex-col text-xs font-bold">Categoría
-        <select name="category" className={field}>{CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}</select>
-      </label>
+      <div className="flex flex-col text-xs font-bold">
+        Categoría
+        <OptionSelect label="Categoría" value={category} onValueChange={(v) => setCategory(v as Category)} options={CATEGORIES.map((c) => ({ value: c.id, label: c.title }))} />
+      </div>
       <label className="flex flex-col text-xs font-bold">Precio $<input name="price" inputMode="numeric" pattern="[0-9]*" className={field} placeholder="Consultar" /></label>
       <label className="flex flex-col text-xs font-bold">Stock<input name="stock" inputMode="numeric" pattern="[0-9]*" defaultValue="0" className={field} /></label>
       <Button className="!min-h-11">Agregar</Button>

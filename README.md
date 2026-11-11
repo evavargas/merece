@@ -20,7 +20,7 @@ design/     DESIGN.md, contexto del proyecto, logos y mockup original
 
 ## Cómo funciona
 
-- **Sin usuarios:** `/admin` pide una clave (`ADMIN_PASSWORD`). El API la compara en tiempo constante y emite una cookie `httpOnly` de 12 h. 5 intentos fallidos bloquean la IP 15 min.
+- **Sin usuarios:** `/admin` pide una clave (`ADMIN_PASSWORD`). El API la compara en tiempo constante y emite una cookie `httpOnly` de 12 h. 10 intentos fallidos bloquean la IP 15 min.
 - **Un solo origen:** Next reescribe `/api/*` hacia el API (`API_URL`), así la cookie no necesita CORS.
 - **Stock:** número de unidades por producto; `0` se muestra como "Sin stock por hoy". Precio vacío se muestra como "Consultar".
 - **Fotos:** JPG/PNG/WebP hasta 5 MB, se guardan en el bucket público `products` de Supabase.
@@ -30,3 +30,7 @@ design/     DESIGN.md, contexto del proyecto, logos y mockup original
 ## Deploy
 
 `web/` en Vercel (variable `API_URL`). `api/` en cualquier host Node (`npm run build -w api && npm start -w api`).
+
+## Mapa de zonas
+
+`web/lib/zones-map.json` se genera con `node scripts/build-zones-map.mjs` (OpenStreetMap, ODbL). Las zonas con entrega son `ZONES` en `web/app/page.tsx` y en el script; OSM no tiene polígono de Buceo, por eso se muestra como círculo aproximado.

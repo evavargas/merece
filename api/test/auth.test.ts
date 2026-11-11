@@ -31,7 +31,7 @@ test("clave correcta da cookie de sesión que habilita /me", async () => {
   assert.equal(me.status, 200);
 });
 
-test("clave incorrecta falla y se bloquea tras 5 intentos", async () => {
-  for (let i = 0; i < 5; i++) assert.equal((await login("mala")).status, 401);
+test("clave incorrecta falla y se bloquea tras 10 intentos", async () => {
+  for (let i = 0; i < 10; i++) assert.equal((await login("mala")).status, 401);
   assert.equal((await login("clave-de-prueba")).status, 429);
 });

@@ -5,8 +5,8 @@ import { Cup } from "./icons";
 function ProductCard({ p, tone }: { p: Product; tone: "accent" | "highlight" }) {
   const soldOut = p.stock === 0;
   return (
-    <li className={`flex flex-col overflow-hidden rounded-3xl bg-card text-foreground ${soldOut ? "opacity-70" : ""}`}>
-      <div className={`relative aspect-[4/3] ${tone === "accent" ? "bg-accent" : "bg-highlight"} text-on-color`}>
+    <li className={`flex flex-col overflow-hidden rounded-3xl bg-card ${soldOut ? "text-muted-foreground" : "text-foreground"}`}>
+      <div className={`relative aspect-[4/3] ${soldOut ? "bg-muted grayscale" : tone === "accent" ? "bg-accent" : "bg-highlight"} text-on-color`}>
         {p.imageUrl ? (
           <Image src={p.imageUrl} alt={p.name} fill sizes="(min-width: 1024px) 320px, (min-width: 640px) 45vw, 100vw" className="object-cover" />
         ) : (
@@ -15,10 +15,10 @@ function ProductCard({ p, tone }: { p: Product; tone: "accent" | "highlight" }) 
       </div>
       <div className="flex flex-1 flex-col gap-1 p-5">
         <div className="flex items-baseline justify-between gap-3">
-          <h3 className="text-lg font-bold leading-snug">{p.name}</h3>
+          <h3 className={`text-lg font-bold leading-snug ${soldOut ? "line-through decoration-2" : ""}`}>{p.name}</h3>
           <span className="whitespace-nowrap font-bold">{formatPrice(p.price)}</span>
         </div>
-        {p.description && <p className="text-sm text-muted-foreground">{p.description}</p>}
+        {p.description && <p className="text-sm">{p.description}</p>}
         <span
           className={`mt-3 inline-flex w-fit rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider ${
             soldOut ? "bg-muted text-muted-foreground" : "bg-accent text-on-color"

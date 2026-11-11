@@ -7,7 +7,7 @@
     "dev:api": "npm run dev -w api",
     "dev:web": "npm run dev -w web",
     "build": "npm run build -ws",
-    "test": "npm test -w api",
+    "test": "npm test -ws --if-present",
     "typecheck": "npm run typecheck -ws"
   },
   "devDependencies": { "npm-run-all2": "^8.0.0" }

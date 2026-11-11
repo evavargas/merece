@@ -1,3 +1,5 @@
+import { formatPrice } from "./price";
+
 export type Category = "pasteleria" | "a_pedido" | "acompanar";
 
 export type Product = {
@@ -31,7 +33,4 @@ export async function getProducts(): Promise<Product[] | null> {
   }
 }
 
-export const formatPrice = (price: number | null) =>
-  price === null
-    ? "Consultar"
-    : new Intl.NumberFormat("es-UY", { style: "currency", currency: "UYU", maximumFractionDigits: 0 }).format(price);
+export const formatPriceLabel = (price: number | null) => (price === null ? "Consultar" : `$ ${formatPrice(price)}`);

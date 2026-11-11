@@ -9,7 +9,7 @@ const productInput = z.object({
   name: z.string().trim().min(1).max(80),
   description: z.string().trim().max(300).default(""),
   category,
-  price: z.number().int().min(0).nullable().default(null),
+  price: z.number().int().min(0).max(1_000_000).nullable().default(null),
   stock: z.number().int().min(0).max(9999).default(0),
   sortOrder: z.number().int().default(0),
 });

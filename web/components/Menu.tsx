@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { CATEGORIES, formatPrice, type Product } from "@/lib/api";
+import { CATEGORIES, formatPriceLabel, type Product } from "@/lib/api";
 import { Cup } from "./icons";
 
 function ProductCard({ p, tone }: { p: Product; tone: "accent" | "highlight" }) {
@@ -16,7 +16,7 @@ function ProductCard({ p, tone }: { p: Product; tone: "accent" | "highlight" }) 
       <div className="flex flex-1 flex-col gap-1 p-5">
         <div className="flex items-baseline justify-between gap-3">
           <h3 className={`text-lg font-bold leading-snug ${soldOut ? "line-through decoration-2" : ""}`}>{p.name}</h3>
-          <span className="whitespace-nowrap font-bold">{formatPrice(p.price)}</span>
+          <span className="whitespace-nowrap font-bold">{formatPriceLabel(p.price)}</span>
         </div>
         {p.description && <p className="text-sm">{p.description}</p>}
         <span

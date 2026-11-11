@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { OptionSelect } from "@/components/ui/select";
+import { formatPrice, parsePrice } from "@/lib/price";
 import { CATEGORIES, type Category, type Product } from "@/lib/api";
 
 class Unauthorized extends Error {}
@@ -23,7 +24,7 @@ const json = (method: string, body: unknown): RequestInit => ({
 });
 
 const field =
-  "min-h-11 w-full rounded-xl border-2 border-input bg-card px-3 text-foreground placeholder:text-muted-foreground";
+  "min-h-11 w-full rounded-xl border-2 border-input bg-card px-3 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-0";
 
 export default function AdminPage() {
   const [state, setState] = useState<"loading" | "out" | "in">("loading");
@@ -138,14 +139,15 @@ function Row({ product: p, onSave, onPhoto, onDelete }: {
   onPhoto: (f: File) => Promise<unknown>;
   onDelete: () => Promise<unknown>;
 }) {
-  const [price, setPrice] = useState(p.price?.toString() ?? "");
+  const [price, setPrice] = useState(p.price === null ? "" : formatPrice(p.price));
   const [stock, setStock] = useState(p.stock.toString());
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const nextPrice = price.trim() === "" ? null : Number(price);
+  const parsed = parsePrice(price);
+  const nextPrice = parsed.ok ? parsed.value : null;
   const nextStock = Number(stock);
-  const valid = Number.isInteger(nextStock) && nextStock >= 0 && (nextPrice === null || (Number.isInteger(nextPrice) && nextPrice >= 0));
+  const valid = parsed.ok && Number.isInteger(nextStock) && nextStock >= 0 && nextStock <= 9999;
   const dirty = nextPrice !== p.price || nextStock !== p.stock;
 
   const run = async (fn: () => Promise<unknown>) => { setBusy(true); await fn(); setBusy(false); };
@@ -162,14 +164,15 @@ function Row({ product: p, onSave, onPhoto, onDelete }: {
         <p className="truncate font-bold">{p.name}</p>
         <p className="text-xs text-muted-foreground">{CATEGORIES.find((c) => c.id === p.category)?.title}</p>
       </div>
-      <label className="flex flex-col text-xs font-bold sm:w-28">
+      <label className="flex flex-col gap-1.5 text-xs font-bold sm:w-28">
         Precio $
-        <input inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Consultar" className={field} />
+        <input inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} onBlur={() => parsed.ok && setPrice(parsed.value === null ? "" : formatPrice(parsed.value))} placeholder="Consultar" aria-invalid={!parsed.ok} aria-describedby={parsed.ok ? undefined : `err-${p.id}`} className={field} />
       </label>
-      <label className="flex flex-col text-xs font-bold sm:w-24">
+      <label className="flex flex-col gap-1.5 text-xs font-bold sm:w-24">
         Stock
         <input inputMode="numeric" value={stock} onChange={(e) => setStock(e.target.value)} className={field} />
       </label>
+      {!parsed.ok && <p id={`err-${p.id}`} role="alert" className="col-span-2 text-sm text-destructive sm:col-span-full">{parsed.error}</p>}
       <div className="col-span-2 flex gap-2 sm:col-span-1">
         <Button className="!min-h-11 flex-1 !px-5" disabled={!dirty || !valid || busy} onClick={() => run(() => onSave({ price: nextPrice, stock: nextStock }))}>
           Guardar
@@ -186,26 +189,30 @@ function Row({ product: p, onSave, onPhoto, onDelete }: {
 
 function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Category; price: number | null; stock: number }) => Promise<unknown> }) {
   const [category, setCategory] = useState<Category>("pasteleria");
+  const [priceError, setPriceError] = useState("");
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const f = new FormData(form);
-    const price = String(f.get("price")).trim();
-    await onCreate({ name: String(f.get("name")), category, price: price === "" ? null : Number(price), stock: Number(f.get("stock") || 0) });
+    const price = parsePrice(String(f.get("price")));
+    if (!price.ok) return setPriceError(price.error);
+    setPriceError("");
+    await onCreate({ name: String(f.get("name")), category, price: price.value, stock: Number(f.get("stock") || 0) });
     form.reset();
   }
 
   return (
     <form onSubmit={submit} className="mt-8 grid gap-3 rounded-2xl bg-muted p-4 sm:grid-cols-[1fr_auto_6rem_5rem_auto] sm:items-end">
-      <label className="flex flex-col text-xs font-bold">Nuevo producto<input name="name" required maxLength={80} className={field} placeholder="Nombre" /></label>
-      <div className="flex flex-col text-xs font-bold">
+      <label className="flex flex-col gap-1.5 text-xs font-bold">Nuevo producto<input name="name" required maxLength={80} className={field} placeholder="Nombre" /></label>
+      <div className="flex flex-col gap-1.5 text-xs font-bold">
         Categoría
         <OptionSelect label="Categoría" value={category} onValueChange={(v) => setCategory(v as Category)} options={CATEGORIES.map((c) => ({ value: c.id, label: c.title }))} />
       </div>
-      <label className="flex flex-col text-xs font-bold">Precio $<input name="price" inputMode="numeric" pattern="[0-9]*" className={field} placeholder="Consultar" /></label>
-      <label className="flex flex-col text-xs font-bold">Stock<input name="stock" inputMode="numeric" pattern="[0-9]*" defaultValue="0" className={field} /></label>
+      <label className="flex flex-col gap-1.5 text-xs font-bold">Precio $<input name="price" inputMode="numeric" className={field} placeholder="Consultar" aria-invalid={!!priceError} aria-describedby={priceError ? "new-price-error" : undefined} /></label>
+      <label className="flex flex-col gap-1.5 text-xs font-bold">Stock<input name="stock" inputMode="numeric" pattern="[0-9]*" defaultValue="0" className={field} /></label>
       <Button className="!min-h-11">Agregar</Button>
+      {priceError && <p id="new-price-error" role="alert" className="text-sm text-destructive sm:col-span-full">{priceError}</p>}
     </form>
   );
 }

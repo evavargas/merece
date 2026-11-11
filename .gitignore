@@ -9,3 +9,4 @@ dist
 supabase/.temp
 web/public/maplibre
 .vercel
+web/AGENTS.md

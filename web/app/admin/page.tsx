@@ -6,6 +6,8 @@ import { OptionSelect } from "@/components/ui/select";
 import { formatPrice, parsePrice } from "@/lib/price";
 import { CATEGORIES, type Category, type Product } from "@/lib/api";
 
+const DESCRIPTION_MAX = 300; // igual que el límite del API y la base
+
 class Unauthorized extends Error {}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -153,20 +155,21 @@ function Panel({ onLogout }: { onLogout: () => void }) {
 
 function Row({ product: p, onSave, onPhoto, onDelete }: {
   product: Product;
-  onSave: (patch: { price: number | null; stock: number }) => Promise<unknown>;
+  onSave: (patch: { price: number | null; stock: number; description: string }) => Promise<unknown>;
   onPhoto: (f: File) => Promise<unknown>;
   onDelete: () => Promise<unknown>;
 }) {
   const [price, setPrice] = useState(p.price === null ? "" : formatPrice(p.price));
   const [stock, setStock] = useState(p.stock.toString());
+  const [description, setDescription] = useState(p.description);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const parsed = parsePrice(price);
   const nextPrice = parsed.ok ? parsed.value : null;
   const nextStock = Number(stock);
-  const valid = parsed.ok && Number.isInteger(nextStock) && nextStock >= 0 && nextStock <= 9999;
-  const dirty = nextPrice !== p.price || nextStock !== p.stock;
+  const valid = parsed.ok && Number.isInteger(nextStock) && nextStock >= 0 && nextStock <= 9999 && description.length <= DESCRIPTION_MAX;
+  const dirty = nextPrice !== p.price || nextStock !== p.stock || description.trim() !== p.description;
 
   const run = async (fn: () => Promise<unknown>) => { setBusy(true); await fn(); setBusy(false); };
 
@@ -190,9 +193,14 @@ function Row({ product: p, onSave, onPhoto, onDelete }: {
         Stock
         <input inputMode="numeric" value={stock} onChange={(e) => setStock(e.target.value)} className={field} />
       </label>
+      <label className="col-span-2 flex flex-col gap-1.5 text-xs font-bold sm:order-last sm:col-span-full">
+        Descripción
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} maxLength={DESCRIPTION_MAX} placeholder="Lo que se ve en la carta debajo del nombre" className={`${field} py-2 font-normal`} />
+        <span className="self-end font-normal text-muted-foreground">{description.length}/{DESCRIPTION_MAX}</span>
+      </label>
       {!parsed.ok && <p id={`err-${p.id}`} role="alert" className="col-span-2 text-sm text-destructive sm:col-span-full">{parsed.error}</p>}
       <div className="col-span-2 flex gap-2 sm:col-span-1">
-        <Button className="!min-h-11 flex-1 !px-5" disabled={!dirty || !valid || busy} onClick={() => run(() => onSave({ price: nextPrice, stock: nextStock }))}>
+        <Button className="!min-h-11 flex-1 !px-5" disabled={!dirty || !valid || busy} onClick={() => run(async () => { await onSave({ price: nextPrice, stock: nextStock, description: description.trim() }); setDescription((d) => d.trim()); })}>
           Guardar
         </Button>
         {confirming ? (

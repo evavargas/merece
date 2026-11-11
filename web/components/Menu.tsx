@@ -1,6 +1,7 @@
 import Image from "next/image";
-import { CATEGORIES, formatPriceLabel, type Product } from "@/lib/api";
-import { Cup } from "./icons";
+import { CATEGORIES, formatPriceLabel, whatsappUrl, type Product } from "@/lib/api";
+import { buttonClass } from "./Button";
+import { Cup, Message } from "./icons";
 
 function ProductCard({ p, tone }: { p: Product; tone: "accent" | "highlight" }) {
   const soldOut = p.stock === 0;
@@ -20,12 +21,21 @@ function ProductCard({ p, tone }: { p: Product; tone: "accent" | "highlight" }) 
         </div>
         {p.description && <p className="text-sm">{p.description}</p>}
         <span
-          className={`mt-3 inline-flex w-fit rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider ${
+          className={`mt-3 mb-4 inline-flex w-fit rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider ${
             soldOut ? "bg-muted text-muted-foreground" : "bg-accent text-on-color"
           }`}
         >
           {soldOut ? "Sin stock por hoy" : "Disponible"}
         </span>
+        <a
+          href={whatsappUrl(soldOut ? `Hola Merece! Quería consultar por: ${p.name}` : `Hola Merece! Quiero pedir: ${p.name}`)}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${soldOut ? "Consultar" : "Pedir"} ${p.name} por WhatsApp`}
+          className={`${buttonClass(soldOut ? "outline" : "primary")} mt-auto !min-h-11 w-full`}
+        >
+          <Message /> {soldOut ? "Consultar" : "Pedir"}
+        </a>
       </div>
     </li>
   );

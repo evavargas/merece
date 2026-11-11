@@ -7,7 +7,7 @@ import { getProducts, getZones, INSTAGRAM_URL } from "@/lib/api";
 
 const STEPS = [
   ["Elegí", "Mirá la carta y decidí qué te dan ganas."],
-  ["Escribinos", "Mandanos tu pedido por mensaje directo en Instagram."],
+  ["Escribinos", "Tocá Pedir en el producto y mandanos el mensaje por WhatsApp, o escribinos por Instagram."],
   ["Te lo llevamos", "Coordinamos el delivery y recibís tu pedido en casa."],
 ] as const;
 

@@ -26,6 +26,10 @@ export type Zone = {
 };
 export type Zones = { type: "FeatureCollection"; features: Zone[] };
 
+// Formato internacional sin "+" ni el 0 local (097 905 849 → 59897905849), como pide wa.me.
+const WHATSAPP_NUMBER = "59897905849";
+export const whatsappUrl = (text: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+
 export const INSTAGRAM_URL = "https://www.instagram.com/merece.singluten/";
 
 // Server-side: el navegador usa el rewrite de /api (next.config.ts).

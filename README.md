@@ -22,7 +22,7 @@ design/     DESIGN.md, contexto del proyecto, logos y mockup original
 
 - **Sin usuarios:** `/admin` pide una clave (`ADMIN_PASSWORD`). El API la compara en tiempo constante y emite una cookie `httpOnly` de 12 h. 10 intentos fallidos bloquean la IP 15 min.
 - **Un solo origen:** Next reescribe `/api/*` hacia el API (`API_URL`), así la cookie no necesita CORS.
-- **Stock:** número de unidades por producto; `0` se muestra como "Sin stock por hoy". Precio vacío se muestra como "Consultar".
+- **Stock:** número de unidades por producto; `0` se muestra como "Sin stock por hoy". Precios en UYU con 2 decimales (formato `1.250,00`); precio vacío se muestra como "Consultar".
 - **Fotos:** JPG/PNG/WebP hasta 5 MB, se guardan en el bucket público `products` de Supabase.
 - La landing se regenera cada 30 s, por eso los cambios del panel tardan hasta medio minuto en verse.
 - La `service_role` key vive solo en el API; la tabla tiene RLS activado y sin políticas.
@@ -33,4 +33,8 @@ design/     DESIGN.md, contexto del proyecto, logos y mockup original
 
 ## Mapa de zonas
 
-`web/lib/zones-map.json` se genera con `node scripts/build-zones-map.mjs` (OpenStreetMap, ODbL). Las zonas con entrega son `ZONES` en `web/app/page.tsx` y en el script; OSM no tiene polígono de Buceo, por eso se muestra como círculo aproximado.
+Mapa interactivo con MapLibre sobre [OpenFreeMap](https://openfreemap.org) (gratis, sin API key, datos de OpenStreetMap) y los polígonos de barrios de la Intendencia de Montevideo (datos abiertos).
+
+- Las zonas con entrega son `DELIVERY` en `scripts/build-barrios.mjs`. Para cambiarlas: editar la lista y correr `node scripts/build-barrios.mjs`, que regenera `web/lib/barrios.json` (colores incluidos: dos barrios que se tocan no comparten color). La leyenda de la página lee ese mismo archivo.
+- El script baja los polígonos de un espejo en GitHub (`cecimargolis/mapas-montevideo`, sin licencia declarada); conviene confirmar la licencia de los datos de la Intendencia antes de lanzar.
+- El worker de MapLibre se copia a `web/public/maplibre/` en `predev`/`prebuild` (no se versiona).

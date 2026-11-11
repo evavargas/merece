@@ -166,7 +166,7 @@ function Row({ product: p, onSave, onPhoto, onDelete }: {
       </div>
       <label className="flex flex-col gap-1.5 text-xs font-bold sm:w-28">
         Precio $
-        <input inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} onBlur={() => parsed.ok && setPrice(parsed.value === null ? "" : formatPrice(parsed.value))} placeholder="Consultar" aria-invalid={!parsed.ok} aria-describedby={parsed.ok ? undefined : `err-${p.id}`} className={field} />
+        <input inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} onBlur={() => parsed.ok && setPrice(parsed.value === null ? "" : formatPrice(parsed.value))} placeholder="Consultar" aria-invalid={!parsed.ok} aria-describedby={parsed.ok ? undefined : `err-${p.id}`} className={field} />
       </label>
       <label className="flex flex-col gap-1.5 text-xs font-bold sm:w-24">
         Stock
@@ -209,7 +209,7 @@ function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Cate
         Categoría
         <OptionSelect label="Categoría" value={category} onValueChange={(v) => setCategory(v as Category)} options={CATEGORIES.map((c) => ({ value: c.id, label: c.title }))} />
       </div>
-      <label className="flex flex-col gap-1.5 text-xs font-bold">Precio $<input name="price" inputMode="numeric" className={field} placeholder="Consultar" aria-invalid={!!priceError} aria-describedby={priceError ? "new-price-error" : undefined} /></label>
+      <label className="flex flex-col gap-1.5 text-xs font-bold">Precio $<input name="price" inputMode="decimal" className={field} placeholder="Consultar" aria-invalid={!!priceError} aria-describedby={priceError ? "new-price-error" : undefined} /></label>
       <label className="flex flex-col gap-1.5 text-xs font-bold">Stock<input name="stock" inputMode="numeric" pattern="[0-9]*" defaultValue="0" className={field} /></label>
       <Button className="!min-h-11">Agregar</Button>
       {priceError && <p id="new-price-error" role="alert" className="text-sm text-destructive sm:col-span-full">{priceError}</p>}

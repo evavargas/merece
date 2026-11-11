@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Merece – Carta en línea</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&amp;family=Gochi+Hand&amp;family=Roboto+Mono:wght@400;500;700&amp;family=Nunito:wght@800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFF0}
+a{color:#3D2825}
+.btn-dark:hover{background:#2A1A18 !important}
+.btn-light:hover{background:#F3EFDF !important}
+.btn-lav:hover{background:#A48DC7 !important}
+.btn-dur:hover{background:#E8976A !important}
+</style>
+</helmet>
+
+<div style="background:#FFFFF0;color:#3D2825;font-family:'Roboto Mono',monospace;font-size:16px;line-height:1.6;width:100%">
+
+  <!-- Barra superior -->
+  <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;max-width:1040px;margin:0 auto;padding:24px 24px 0 24px;box-sizing:border-box">
+    <div style="font-family:'Bagel Fat One',sans-serif;font-size:32px;line-height:1;color:#3D2825">Merece</div>
+    <a class="btn-dark" href="https://www.instagram.com/merece.singluten/" aria-label="Instagram de Merece, @merece.singluten" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 20px;border-radius:999px;background:#3D2825;color:#FFFFF0;text-decoration:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFF0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.8" fill="#FFFFF0"></circle></svg>
+      <span>@merece.singluten</span>
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div style="max-width:1040px;margin:0 auto;padding:56px 24px 72px 24px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px">
+    <svg width="96" height="96" viewBox="0 0 100 100" fill="none" stroke="{{accent}}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M30 14 C26 22 34 26 30 34"></path>
+      <path d="M48 10 C44 20 54 24 48 34"></path>
+      <path d="M66 14 C62 22 70 26 66 34"></path>
+      <path d="M18 44 L78 44 L74 74 C73 82 66 88 58 88 L38 88 C30 88 23 82 22 74 Z"></path>
+      <path d="M78 52 C92 52 92 72 76 72"></path>
+    </svg>
+    <h1 style="margin:0;font-family:'Bagel Fat One',sans-serif;font-weight:400;font-size:120px;line-height:1;letter-spacing:0;color:#3D2825;display:flex;flex-wrap:wrap;justify-content:center">
+      <span style="display:inline-block;transform:rotate(-5deg);background:linear-gradient(to bottom,{{accent}} 0%,{{accent}} 40%,#3D2825 40%,#3D2825 100%);-webkit-background-clip:text;background-clip:text;color:transparent">M</span>
+      <span style="display:inline-block;transform:rotate(3deg) translateY(4px)">e</span>
+      <span style="display:inline-block;transform:rotate(-3deg)">r</span>
+      <span style="display:inline-block;transform:rotate(4deg) translateY(3px)">e</span>
+      <span style="display:inline-block;transform:rotate(-4deg)">c</span>
+      <span style="display:inline-block;transform:rotate(2deg) translateY(4px)">e</span>
+    </h1>
+    <div style="font-family:'Gochi Hand',cursive;font-size:30px;letter-spacing:0.12em;text-transform:uppercase;color:#3D2825">Sin gluten</div>
+    <p style="margin:8px 0 0 0;max-width:560px;font-size:18px">Pastelería clásica y artesanal, hecha para darse un gusto. Delivery en Montevideo.</p>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:12px">
+      <a class="btn-dark" href="https://www.instagram.com/merece.singluten/" style="display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 28px;border-radius:999px;background:#3D2825;color:#FFFFF0;text-decoration:none;font-weight:700;font-size:16px">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFF0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.8" fill="#FFFFF0"></circle></svg>
+        <span>Pedí por Instagram</span>
+      </a>
+      <a class="btn-light" href="#carta" style="display:inline-flex;align-items:center;min-height:48px;padding:0 28px;border-radius:999px;border:2px solid #3D2825;background:#FFFFF0;color:#3D2825;text-decoration:none;font-weight:700;font-size:16px;box-sizing:border-box">Ver la carta</a>
+    </div>
+  </div>
+
+  <!-- Carta -->
+  <div id="carta" style="background:#3D2825;color:#FFFFF0;padding:80px 24px;box-sizing:border-box">
+    <div style="max-width:1040px;margin:0 auto">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin-bottom:56px">
+        <div style="font-family:'Gochi Hand',cursive;font-size:24px;letter-spacing:0.12em;text-transform:uppercase;color:#F0AE86">La carta</div>
+        <h2 style="margin:0;font-family:'Bagel Fat One',sans-serif;font-weight:400;font-size:56px;line-height:1.1;color:#FFFFF0">Algo rico para hoy</h2>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:48px">
+
+        <!-- Dulce -->
+        <div style="flex:1 1 420px;min-width:0">
+          <div style="display:inline-flex;align-items:center;min-height:36px;padding:0 18px;border-radius:999px;background:#B9A5D6;color:#3D2825;font-weight:700;font-size:15px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:24px">Pastelería</div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px dashed #B9A5D6">
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:18px">Alfajores de maicena</div>
+              <div style="font-size:14px">Rellenos de dulce de leche, con coco rallado.</div>
+            </div>
+            <div style="color:#F0AE86;font-weight:700;white-space:nowrap">$ [PRECIO]</div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px dashed #B9A5D6">
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:18px">Brownie</div>
+              <div style="font-size:14px">Húmedo, de chocolate intenso.</div>
+            </div>
+            <div style="color:#F0AE86;font-weight:700;white-space:nowrap">$ [PRECIO]</div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px dashed #B9A5D6">
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:18px">Lemon pie</div>
+              <div style="font-size:14px">Crema de limón y merengue.</div>
+            </div>
+            <div style="color:#F0AE86;font-weight:700;white-space:nowrap">$ [PRECIO]</div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px dashed #B9A5D6">
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:18px">Tarta de dulce de leche</div>
+              <div style="font-size:14px">Base crocante y mucho dulce de leche.</div>
+            </div>
+            <div style="color:#F0AE86;font-weight:700;white-space:nowrap">$ [PRECIO]</div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px dashed #B9A5D6">
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:18px">Budín de limón</div>
+              <div style="font-size:14px">Con glaseado, para la merienda.</div>
+            </div>
+            <div style="color:#F0AE86;font-weight:700;white-space:nowrap">$ [PRECIO]</div>
+          </div>
+        </div>
+
+        <!-- Café -->
+        <div style="flex:1 1 420px;min-width:0">
+          <div style="display:inline-flex;align-items:center;min-height:36px;padding:0 18px;border-radius:999px;background:#F0AE86;color:#3D2825;font-weight:700;font-size:15px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:24px">Para acompañar</div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px dashed #F0AE86">
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:18px">Café de especialidad</div>
+              <div style="font-size:14px">En grano o molido, según tu método.</div>
+            </div>
+            <div style="color:#B9A5D6;font-weight:700;white-space:nowrap">$ [PRECIO]</div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px dashed #F0AE86">
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:18px">Combo merienda</div>
+              <div style="font-size:14px">Una porción a elección más café.</div>
+            </div>
+            <div style="color:#B9A5D6;font-weight:700;white-space:nowrap">$ [PRECIO]</div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px dashed #F0AE86">
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:18px">Caja para regalar</div>
+              <div style="font-size:14px">Selección de porciones, lista para dar.</div>
+            </div>
+            <div style="color:#B9A5D6;font-weight:700;white-space:nowrap">$ [PRECIO]</div>
+          </div>
+
+          <div style="margin-top:32px;padding:20px 24px;border-radius:24px;background:#B9A5D6;color:#3D2825;font-size:15px">
+            Los productos y precios de esta carta son un ejemplo. Escribinos por Instagram para ver lo que hay hoy.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cómo pedir -->
+  <div style="padding:80px 24px;box-sizing:border-box">
+    <div style="max-width:1040px;margin:0 auto">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin-bottom:48px">
+        <div style="font-family:'Gochi Hand',cursive;font-size:24px;letter-spacing:0.12em;text-transform:uppercase;color:#3D2825">Cómo pedir</div>
+        <h2 style="margin:0;font-family:'Bagel Fat One',sans-serif;font-weight:400;font-size:48px;line-height:1.1;color:#3D2825">Tres pasos y listo</h2>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:24px">
+        <div style="flex:1 1 260px;min-width:0;background:#F3EFDF;border-radius:28px;padding:28px;box-sizing:border-box">
+          <div style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:999px;background:#B9A5D6;color:#3D2825;font-family:'Bagel Fat One',sans-serif;font-size:22px">1</div>
+          <div style="font-weight:700;font-size:18px;margin-top:16px">Elegí</div>
+          <div style="font-size:15px;margin-top:4px">Mirá la carta y decidí qué te dan ganas.</div>
+        </div>
+        <div style="flex:1 1 260px;min-width:0;background:#F3EFDF;border-radius:28px;padding:28px;box-sizing:border-box">
+          <div style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:999px;background:#F0AE86;color:#3D2825;font-family:'Bagel Fat One',sans-serif;font-size:22px">2</div>
+          <div style="font-weight:700;font-size:18px;margin-top:16px">Escribinos</div>
+          <div style="font-size:15px;margin-top:4px">Mandanos tu pedido por mensaje directo en Instagram.</div>
+        </div>
+        <div style="flex:1 1 260px;min-width:0;background:#F3EFDF;border-radius:28px;padding:28px;box-sizing:border-box">
+          <div style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:999px;background:#B9A5D6;color:#3D2825;font-family:'Bagel Fat One',sans-serif;font-size:22px">3</div>
+          <div style="font-weight:700;font-size:18px;margin-top:16px">Te lo llevamos</div>
+          <div style="font-size:15px;margin-top:4px">Coordinamos el delivery y recibís tu pedido en casa.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:40px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px">
+        <div style="font-weight:700;font-size:15px;margin-right:6px">Zonas de entrega [A CONFIRMAR]:</div>
+        <div style="padding:6px 16px;border-radius:999px;background:#B9A5D6;color:#3D2825;font-size:14px;font-weight:500">Pocitos</div>
+        <div style="padding:6px 16px;border-radius:999px;background:#F0AE86;color:#3D2825;font-size:14px;font-weight:500">Parque Rodó</div>
+        <div style="padding:6px 16px;border-radius:999px;background:#B9A5D6;color:#3D2825;font-size:14px;font-weight:500">Cordón</div>
+        <div style="padding:6px 16px;border-radius:999px;background:#F0AE86;color:#3D2825;font-size:14px;font-weight:500">Centro</div>
+        <div style="padding:6px 16px;border-radius:999px;background:#B9A5D6;color:#3D2825;font-size:14px;font-weight:500">Buceo</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cierre -->
+  <div style="background:#3D2825;color:#FFFFF0;padding:72px 24px;box-sizing:border-box">
+    <div style="max-width:1040px;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px">
+      <h2 style="margin:0;font-family:'Bagel Fat One',sans-serif;font-weight:400;font-size:48px;line-height:1.1;color:#FFFFF0">Date el gusto</h2>
+      <p style="margin:0;max-width:480px;font-size:17px">Seguinos y hacé tu pedido por Instagram.</p>
+      <a class="btn-dur" href="https://www.instagram.com/merece.singluten/" style="display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 32px;border-radius:999px;background:#F0AE86;color:#3D2825;text-decoration:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:18px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3D2825" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.8" fill="#3D2825"></circle></svg>
+        <span>@merece.singluten</span>
+      </a>
+      <div style="font-family:'Gochi Hand',cursive;font-size:22px;letter-spacing:0.12em;text-transform:uppercase;color:#B9A5D6;margin-top:16px">Merece · Sin gluten · Montevideo</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B9A5D6","options":["#B9A5D6","#F0AE86"],"section":"Marca"},"$preview":{"width":1280,"height":2300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#B9A5D6' };
+  }
+}
+</script>
+</body>
+</html>

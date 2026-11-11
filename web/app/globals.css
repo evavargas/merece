@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* Tokens de design/DESIGN.md. Los componentes usan solo estas clases, nunca hex a mano. */
+:root {
+  --background: #fffff0;
+  --foreground: #3d2825;
+  --card: #ffffff;
+  --card-hover: #f5f2f9;
+  --primary: #3d2825;
+  --primary-hover: #2a1a18;
+  --primary-foreground: #fffff0;
+  --muted: #f3efdf;
+  --muted-foreground: #6b534f;
+  --border: #ddd5be;
+  --input: #9b8782;
+  --ring: #3d2825;
+  --destructive: #b3261e;
+  --accent: #b9a5d6;
+  --highlight: #f0ae86;
+  --on-color: #3d2825; /* texto sobre lavanda / durazno */
+  --band: #3d2825; /* secciones oscuras: marrón en ambos modos */
+  --band-foreground: #fffff0;
+  --scrollbar: #b9a5d6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #2a1a18;
+    --foreground: #fffff0;
+    --card: #3d2825;
+    --card-hover: #4e3a3e;
+    --primary: #b9a5d6;
+    --primary-hover: #a48dc7;
+    --primary-foreground: #3d2825;
+    --muted: #4a332f;
+    --muted-foreground: #d9c9c0;
+    --border: #5a423d;
+    --input: #8f7772;
+    --ring: #b9a5d6;
+    --destructive: #ff8a80;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-accent: var(--accent);
+  --color-highlight: var(--highlight);
+  --color-on-color: var(--on-color);
+  --color-band: var(--band);
+  --color-band-foreground: var(--band-foreground);
+  --font-display: var(--font-bagel), sans-serif;
+  --font-hand: var(--font-gochi), cursive;
+  --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
+  --font-small: var(--font-nunito), sans-serif;
+}
+
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
+body { background: var(--background); color: var(--foreground); font-family: var(--font-roboto-mono), ui-monospace, monospace; line-height: 1.6; }
+:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }

@@ -70,3 +70,29 @@ html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--sc
 body { background: var(--background); color: var(--foreground); font-family: var(--font-roboto-mono), ui-monospace, monospace; line-height: 1.6; }
 :focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+
+/* Cartel de neón (components/NeonSign.tsx). Pensado para fondos `band`: el tubo apagado se mezcla con ese marrón. */
+@property --lit { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --buzz { syntax: "<number>"; inherits: false; initial-value: 1; }
+
+.neon { --neon: var(--accent); --lit: 0; transition: --lit 0.25s ease-in; }
+.neon[data-lit="true"] { --lit: 1; animation: neon-on 1.1s linear; }
+.neon-letter {
+  --l: calc(var(--lit) * var(--buzz));
+  --glow: color-mix(in srgb, var(--neon) calc(var(--l) * 100%), transparent);
+  color: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--band-foreground) 70%, var(--neon)) calc(var(--l) * 100%),
+    color-mix(in srgb, var(--neon) 22%, var(--band))
+  );
+  text-shadow: 0 0 1px var(--glow), 0 0 8px var(--glow), 0 0 22px var(--glow), 0 0 46px var(--glow), 0 0 90px var(--glow);
+}
+.neon-buzz { animation: neon-buzz 5.5s linear infinite; }
+
+@keyframes neon-on {
+  0% { --lit: 0; } 8% { --lit: 1; } 12% { --lit: 0.1; } 20% { --lit: 0.9; } 24% { --lit: 0.2; } 38%, 100% { --lit: 1; }
+}
+@keyframes neon-buzz {
+  0%, 88%, 100% { --buzz: 1; } 89% { --buzz: 0.25; } 91% { --buzz: 1; } 93% { --buzz: 0.15; } 95% { --buzz: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .neon, .neon-buzz { animation: none; } }

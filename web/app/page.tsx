@@ -1,6 +1,7 @@
 import { buttonClass } from "@/components/Button";
 import { Cup, Instagram } from "@/components/icons";
 import { Menu } from "@/components/Menu";
+import { NeonSign } from "@/components/NeonSign";
 import { Wordmark } from "@/components/Wordmark";
 import { ZonesMap } from "@/components/ZonesMap";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
@@ -11,6 +12,8 @@ const STEPS = [
   ["Escribinos", "Tocá Pedir en el producto y mandanos el mensaje por WhatsApp, o escribinos por Instagram."],
   ["Te lo llevamos", "Coordinamos el delivery y recibís tu pedido en casa."],
 ] as const;
+
+const NEON_PHRASES = ["Te lo merecés", "¿Buscando con qué acompañar el cafecito o mate?", "¿Qué se te antoja hoy?"] as const;
 
 const TONE_CLASS = ["bg-accent text-on-color", "bg-highlight text-on-color", "bg-foreground text-background"];
 
@@ -38,7 +41,7 @@ export default async function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <header className={`${section} flex flex-wrap items-center justify-between gap-4 pt-6`}>
+      <header className={`${section} absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-between gap-4 pt-6`}>
         <span className="font-display text-3xl leading-none">Merece</span>
         <a href={INSTAGRAM_URL} className={`${buttonClass("primary")} font-small !min-h-11 !px-5 text-[15px] font-extrabold`} aria-label="Instagram de Merece, @merece.singluten">
           <Instagram /> @merece.singluten
@@ -46,13 +49,16 @@ export default async function Home() {
       </header>
 
       <main>
-        <section className={`${section} flex flex-col items-center gap-5 pb-20 pt-14 text-center`}>
+        <section className={`${section} flex min-h-svh flex-col items-center justify-center gap-5 pb-16 pt-28 text-center`}>
           <Cup className="h-24 w-24 text-accent" />
           <h1 className="text-[clamp(4.5rem,19vw,7.5rem)]">
             <Wordmark />
           </h1>
-          <p className="font-hand text-3xl uppercase tracking-[0.12em]">Sin gluten</p>
-          <p className="max-w-xl text-lg">Pastelería clásica y artesanal, hecha para darse un gusto. Delivery en Montevideo.</p>
+          <p className="max-w-xl text-lg">
+            Pastelería Sin Gluten y Café de Especialidad.
+            <br />
+            Delivery en Montevideo
+          </p>
           <div className="mt-3 flex flex-wrap justify-center gap-3">
             <a href={INSTAGRAM_URL} className={buttonClass("primary")}>
               <Instagram /> Pedí por Instagram
@@ -65,7 +71,8 @@ export default async function Home() {
           <div className={section}>
             <div className="mb-14 flex flex-col items-center gap-2 text-center">
               <p className={`${eyebrow} text-highlight`}>La carta</p>
-              <h2 className={h2}>Algo rico para hoy</h2>
+              <h2 className="sr-only">{NEON_PHRASES[0]}</h2>
+              <NeonSign phrases={NEON_PHRASES} className="font-hand mb-2 py-2 text-[clamp(2.75rem,11vw,5.5rem)] leading-[1.05]" />
               <p className="mt-2 max-w-md text-sm opacity-90">La disponibilidad cambia todos los días. Si algo no está, escribinos y lo coordinamos.</p>
             </div>
             <Menu products={products} />

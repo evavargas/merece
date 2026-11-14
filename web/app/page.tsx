@@ -2,6 +2,7 @@ import { buttonClass } from "@/components/Button";
 import { Cup, Instagram } from "@/components/icons";
 import { Menu } from "@/components/Menu";
 import { NeonSign } from "@/components/NeonSign";
+import { StickyBar } from "@/components/StickyBar";
 import { Wordmark } from "@/components/Wordmark";
 import { ZonesMap } from "@/components/ZonesMap";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
@@ -49,7 +50,7 @@ export default async function Home() {
       </header>
 
       <main>
-        <section className={`${section} flex min-h-svh flex-col items-center justify-center gap-5 pb-16 pt-28 text-center`}>
+        <section id="inicio" className={`${section} flex min-h-svh flex-col items-center justify-center gap-5 pb-16 pt-28 text-center`}>
           <Cup className="h-24 w-24 text-accent" />
           <h1 className="text-[clamp(4.5rem,19vw,7.5rem)]">
             <Wordmark />
@@ -70,11 +71,8 @@ export default async function Home() {
         <section id="carta" className="scroll-mt-4 bg-band py-20 text-band-foreground">
           <div className={section}>
             <div className="mb-14 flex flex-col items-center gap-2 text-center">
-              <p className={`${eyebrow} text-highlight`}>La carta</p>
               <h2 className="sr-only">{NEON_PHRASES[0]}</h2>
-              <NeonSign phrases={NEON_PHRASES} className="font-hand mb-2 py-2 text-[clamp(2.75rem,11vw,5.5rem)] leading-[1.05]" />
-              <p className="mt-2 max-w-md text-sm opacity-90">La disponibilidad cambia todos los días. Si algo no está, escribinos y lo coordinamos.</p>
-            </div>
+              <NeonSign phrases={NEON_PHRASES} className="font-hand mb-2 py-2 text-[clamp(2.75rem,11vw,5.5rem)] leading-[1.05]" />            </div>
             <Menu products={products} />
           </div>
         </section>
@@ -117,17 +115,18 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="bg-band py-[72px] text-band-foreground">
+        <section className="bg-band pb-32 pt-[72px] text-band-foreground">
           <div className={`${section} flex flex-col items-center gap-5 text-center`}>
             <h2 className={h2}>Date el gusto</h2>
             <p className="max-w-md text-[17px]">Seguinos y hacé tu pedido por Instagram.</p>
-            <a href={INSTAGRAM_URL} className={`${buttonClass("highlight")} font-small !min-h-[52px] !px-8 text-lg font-extrabold`}>
+            <a href={INSTAGRAM_URL} className={`${buttonClass("accent")} font-small !min-h-[52px] !px-8 text-lg font-extrabold`}>
               <Instagram className="h-6 w-6" /> @merece.singluten
             </a>
-            <p className="font-hand mt-4 text-[22px] uppercase tracking-[0.12em] text-accent">Merece · Sin gluten · Montevideo</p>
+            <p className="font-hand mt-4 text-[22px] uppercase tracking-[0.12em] text-highlight">Merece · Sin gluten · Montevideo</p>
           </div>
         </section>
       </main>
+      <StickyBar heroId="inicio" />
     </>
   );
 }

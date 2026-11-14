@@ -75,7 +75,8 @@ body { background: var(--background); color: var(--foreground); font-family: var
 @property --lit { syntax: "<number>"; inherits: true; initial-value: 0; }
 @property --buzz { syntax: "<number>"; inherits: false; initial-value: 1; }
 
-.neon { --neon: var(--accent); --lit: 0; transition: --lit 0.25s ease-in; }
+.neon { --neon: var(--highlight); --lit: 0; transition: --lit 0.25s ease-in; }
+.neon[data-tone="accent"] { --neon: var(--accent); }
 .neon[data-lit="true"] { --lit: 1; animation: neon-on 1.1s linear; }
 .neon-letter {
   --l: calc(var(--lit) * var(--buzz));
@@ -96,3 +97,8 @@ body { background: var(--background); color: var(--foreground); font-family: var
   0%, 88%, 100% { --buzz: 1; } 89% { --buzz: 0.25; } 91% { --buzz: 1; } 93% { --buzz: 0.15; } 95% { --buzz: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .neon, .neon-buzz { animation: none; } }
+
+/* Minijuego: la flecha que señala dónde tocar se mueve suave. */
+.mnudge { animation: mnudge 0.9s ease-in-out infinite; }
+@keyframes mnudge { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-5px, 5px); } }
+@media (prefers-reduced-motion: reduce) { .mnudge { animation: none; } }

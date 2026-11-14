@@ -2,12 +2,13 @@ import Image from "next/image";
 import { CATEGORIES, formatPriceLabel, whatsappUrl, type Product } from "@/lib/api";
 import { buttonClass } from "./Button";
 import { Cup, Message } from "./icons";
+import { NeonSign } from "./NeonSign";
 
-function ProductCard({ p, tone }: { p: Product; tone: "accent" | "highlight" }) {
+function ProductCard({ p, badge }: { p: Product; badge: string }) {
   const soldOut = p.stock === 0;
   return (
     <li className={`flex flex-col overflow-hidden rounded-3xl bg-card ${soldOut ? "text-muted-foreground" : "text-foreground"}`}>
-      <div className={`relative aspect-[4/3] ${soldOut ? "bg-muted grayscale" : tone === "accent" ? "bg-accent" : "bg-highlight"} text-on-color`}>
+      <div className={`relative aspect-[4/3] ${soldOut ? "bg-muted grayscale" : "bg-highlight"} text-on-color`}>
         {p.imageUrl ? (
           <Image src={p.imageUrl} alt={p.name} fill sizes="(min-width: 1024px) 320px, (min-width: 640px) 45vw, 100vw" className="object-cover" />
         ) : (
@@ -21,21 +22,23 @@ function ProductCard({ p, tone }: { p: Product; tone: "accent" | "highlight" }) 
         </div>
         {p.description && <p className="text-sm">{p.description}</p>}
         <span
-          className={`mt-3 mb-4 inline-flex w-fit rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider ${
-            soldOut ? "bg-muted text-muted-foreground" : "bg-accent text-on-color"
+          className={`mt-3 inline-flex w-fit rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider ${
+            soldOut ? "bg-muted text-muted-foreground" : "bg-highlight text-on-color"
           }`}
         >
-          {soldOut ? "Sin stock por hoy" : "Disponible"}
+          {soldOut ? "Sin stock por hoy" : badge}
         </span>
-        <a
-          href={whatsappUrl(soldOut ? `Hola Merece! Quería consultar por: ${p.name}` : `Hola Merece! Quiero pedir: ${p.name}`)}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`${soldOut ? "Consultar" : "Pedir"} ${p.name} por WhatsApp`}
-          className={`${buttonClass(soldOut ? "outline" : "primary")} mt-auto !min-h-11 w-full`}
-        >
-          <Message /> {soldOut ? "Consultar" : "Pedir"}
-        </a>
+        <div className="mt-auto pt-4">
+          <a
+            href={whatsappUrl(soldOut ? `Hola Merece! Quería consultar por: ${p.name}` : `Hola Merece! Quiero pedir: ${p.name}`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${soldOut ? "Consultar" : "Pedir"} ${p.name} por WhatsApp`}
+            className={`${buttonClass(soldOut ? "outline" : "primary")} !min-h-11 w-full`}
+          >
+            <Message /> {soldOut ? "Consultar" : "Pedir"}
+          </a>
+        </div>
       </div>
     </li>
   );
@@ -47,26 +50,40 @@ export function Menu({ products }: { products: Product[] | null }) {
   }
   return (
     <div className="flex flex-col gap-16">
-      {CATEGORIES.map((cat, i) => {
+      {CATEGORIES.map((cat) => {
         const items = products.filter((p) => p.category === cat.id);
         if (items.length === 0) return null;
-        const tone = i % 2 === 0 ? "accent" : "highlight";
         return (
           <section key={cat.id} aria-labelledby={`cat-${cat.id}`}>
-            <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1">
-              <h3
-                id={`cat-${cat.id}`}
-                className={`inline-flex min-h-9 items-center rounded-full px-5 text-sm font-bold uppercase tracking-widest text-on-color ${
-                  tone === "accent" ? "bg-accent" : "bg-highlight"
-                }`}
-              >
+            {cat.neon ? (
+              <div className="mb-8 text-center">
+                <h3 id={`cat-${cat.id}`} className="sr-only">
+                  {cat.title}
+                </h3>
+                <NeonSign
+                  phrases={cat.neon}
+                  tone="accent"
+                  shrinkLong={false}
+                  className="font-hand py-2 text-[clamp(2rem,6vw,3.25rem)] leading-[1.05]"
+                />
+              </div>
+            ) : cat.hideTitle ? (
+              <h3 id={`cat-${cat.id}`} className="sr-only">
                 {cat.title}
               </h3>
-              <span className="text-sm opacity-80">{cat.blurb}</span>
-            </div>
+            ) : (
+              <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1">
+                <h3
+                  id={`cat-${cat.id}`}
+                  className="inline-flex min-h-9 items-center rounded-full bg-highlight px-5 text-sm font-bold uppercase tracking-widest text-on-color"
+                >
+                  {cat.title}
+                </h3>
+              </div>
+            )}
             <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((p) => (
-                <ProductCard key={p.id} p={p} tone={tone} />
+                <ProductCard key={p.id} p={p} badge={cat.badge ?? "Disponible"} />
               ))}
             </ul>
           </section>

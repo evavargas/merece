@@ -13,10 +13,13 @@ export type Product = {
   sortOrder: number;
 };
 
-export const CATEGORIES: { id: Category; title: string; blurb: string }[] = [
-  { id: "pasteleria", title: "Pastelería", blurb: "Lo clásico de todos los días." },
-  { id: "a_pedido", title: "Tortas a pedido", blurb: "Pedilas con anticipación." },
-  { id: "acompanar", title: "Para acompañar", blurb: "Para armar la merienda completa." },
+// `neon`: en vez de la etiqueta, la categoría se presenta con un cartel de neón que rota estas frases.
+// `hideTitle`: sin etiqueta visible; el título queda solo para lectores de pantalla.
+// `badge`: texto del badge de las tarjetas con stock (sin stock siempre dice "Sin stock por hoy").
+export const CATEGORIES: { id: Category; title: string; neon?: readonly string[]; hideTitle?: boolean; badge?: string }[] = [
+  { id: "pasteleria", title: "Pastelería", hideTitle: true },
+  { id: "a_pedido", title: "Tortas a pedido", hideTitle: true, badge: "Torta a pedido" },
+  { id: "acompanar", title: "Para acompañar", neon: ["¿Sin bebida para acompañar el postre?", "Elegí tu favorita"] },
 ];
 
 export type Zone = {

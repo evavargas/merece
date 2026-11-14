@@ -7,6 +7,7 @@ const variants = {
   primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
   outline: "border-2 border-foreground text-foreground hover:bg-muted",
   highlight: "bg-highlight text-on-color hover:brightness-95",
+  accent: "bg-accent text-on-color hover:brightness-95",
   ghost: "text-foreground hover:bg-muted",
 } as const;
 

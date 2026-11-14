@@ -8,7 +8,17 @@ const OFF_MS = 320;
 const LONG_PHRASE = 24;
 
 // Cartel de neón decorativo: el texto accesible va aparte (el h2 de la sección), por eso es aria-hidden.
-export function NeonSign({ phrases, className = "" }: { phrases: readonly string[]; className?: string }) {
+export function NeonSign({
+  phrases,
+  tone = "highlight",
+  shrinkLong = true,
+  className = "",
+}: {
+  phrases: readonly string[];
+  tone?: "highlight" | "accent";
+  shrinkLong?: boolean;
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [lit, setLit] = useState(false);
@@ -50,7 +60,7 @@ export function NeonSign({ phrases, className = "" }: { phrases: readonly string
   }, [phrases.length]);
 
   return (
-    <div ref={ref} aria-hidden="true" data-lit={lit} className={`neon grid ${className}`}>
+    <div ref={ref} aria-hidden="true" data-lit={lit} data-tone={tone} className={`neon grid ${className}`}>
       {phrases.map((phrase, i) => {
         const letters = phrase.replace(/\s/g, "").length;
         const buzzAt = Math.floor(letters * 0.6);
@@ -58,7 +68,7 @@ export function NeonSign({ phrases, className = "" }: { phrases: readonly string
         return (
           <span
             key={phrase}
-            className={`col-start-1 row-start-1 self-center text-balance ${phrase.length > LONG_PHRASE ? "text-[0.6em]" : ""} ${i === index ? "" : "invisible"}`}
+            className={`col-start-1 row-start-1 self-center text-balance ${shrinkLong && phrase.length > LONG_PHRASE ? "text-[0.6em]" : ""} ${i === index ? "" : "invisible"}`}
           >
             {phrase.split(" ").map((word, w) => (
               <Fragment key={w}>

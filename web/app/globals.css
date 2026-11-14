@@ -98,6 +98,36 @@ body { background: var(--background); color: var(--foreground); font-family: var
 }
 @media (prefers-reduced-motion: reduce) { .neon, .neon-buzz { animation: none; } }
 
+/* Aro de neón durazno del botón del minijuego: titila sin parar para llamar la atención. */
+@property --ring-k { syntax: "<number>"; inherits: false; initial-value: 1; }
+.neon-ring {
+  --ring: var(--highlight);
+  --ring-glow: color-mix(in srgb, var(--ring) calc(var(--ring-k) * 100%), transparent);
+  border: 2px solid color-mix(in srgb, color-mix(in srgb, var(--ring) 70%, white) calc(var(--ring-k) * 100%), var(--muted));
+  box-shadow:
+    0 0 2px var(--ring-glow),
+    0 0 8px var(--ring-glow),
+    0 0 18px var(--ring-glow),
+    0 0 36px color-mix(in srgb, var(--ring-glow) 55%, transparent),
+    inset 0 0 6px color-mix(in srgb, var(--ring-glow) 60%, transparent);
+  animation: neon-ring 1.3s linear infinite;
+}
+@keyframes neon-ring {
+  0%, 100% { --ring-k: 1; }
+  8% { --ring-k: 0.15; }
+  14% { --ring-k: 0.9; }
+  22% { --ring-k: 0.3; }
+  30% { --ring-k: 1; }
+  42% { --ring-k: 0.1; }
+  50% { --ring-k: 0.85; }
+  58% { --ring-k: 0.2; }
+  68% { --ring-k: 1; }
+  78% { --ring-k: 0.25; }
+  86% { --ring-k: 0.95; }
+  93% { --ring-k: 0.15; }
+}
+@media (prefers-reduced-motion: reduce) { .neon-ring { animation: none; } }
+
 /* Minijuego: la flecha que señala dónde tocar se mueve suave. */
 .mnudge { animation: mnudge 0.9s ease-in-out infinite; }
 @keyframes mnudge { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-5px, 5px); } }

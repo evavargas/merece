@@ -33,7 +33,6 @@ const jsonLd = {
 };
 
 const section = "mx-auto w-full max-w-5xl px-6";
-const eyebrow = "font-hand text-2xl uppercase tracking-[0.12em]";
 const h2 = "font-display text-4xl leading-tight sm:text-5xl";
 
 export default async function Home() {
@@ -42,30 +41,17 @@ export default async function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <header className={`${section} absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-between gap-4 pt-6`}>
-        <span className="font-display text-3xl leading-none">Merece</span>
-        <a href={INSTAGRAM_URL} className={`${buttonClass("primary")} font-small !min-h-11 !px-5 text-[15px] font-extrabold`} aria-label="Instagram de Merece, @merece.singluten">
-          <Instagram /> @merece.singluten
-        </a>
-      </header>
-
       <main>
-        <section id="inicio" className={`${section} flex min-h-svh flex-col items-center justify-center gap-5 pb-16 pt-28 text-center`}>
+        <section className={`${section} flex flex-col items-center gap-5 pb-16 pt-[60px] text-center`}>
           <Cup className="h-24 w-24 text-accent" />
           <h1 className="text-[clamp(4.5rem,19vw,7.5rem)]">
             <Wordmark />
           </h1>
           <p className="max-w-xl text-lg">
-            Pastelería Sin Gluten y Café de Especialidad.
-            <br />
-            Delivery en Montevideo
+            Pastelería Sin Gluten
+            <br />y
+            <br />Café de especialidad
           </p>
-          <div className="mt-3 flex flex-wrap justify-center gap-3">
-            <a href={INSTAGRAM_URL} className={buttonClass("primary")}>
-              <Instagram /> Pedí por Instagram
-            </a>
-            <a href="#carta" className={buttonClass("outline")}>Ver la carta</a>
-          </div>
         </section>
 
         <section id="carta" className="scroll-mt-4 bg-band py-20 text-band-foreground">
@@ -80,8 +66,7 @@ export default async function Home() {
         <section className="py-20">
           <div className={section}>
             <div className="mb-12 flex flex-col items-center gap-2 text-center">
-              <p className={eyebrow}>Cómo pedir</p>
-              <h2 className={h2}>Tres pasos y listo</h2>
+              <h2 className={h2}>Pedí en tres pasos</h2>
             </div>
             <ol className="grid gap-6 md:grid-cols-3">
               {STEPS.map(([title, text], i) => (
@@ -126,7 +111,7 @@ export default async function Home() {
           </div>
         </section>
       </main>
-      <StickyBar heroId="inicio" />
+      <StickyBar />
     </>
   );
 }

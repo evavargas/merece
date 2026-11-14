@@ -14,12 +14,21 @@ export type Product = {
 };
 
 // `neon`: en vez de la etiqueta, la categoría se presenta con un cartel de neón que rota estas frases.
+// `neonTone`: color del cartel (por defecto lavanda).
 // `hideTitle`: sin etiqueta visible; el título queda solo para lectores de pantalla.
 // `badge`: texto del badge de las tarjetas con stock (sin stock siempre dice "Sin stock por hoy").
-export const CATEGORIES: { id: Category; title: string; neon?: readonly string[]; hideTitle?: boolean; badge?: string }[] = [
+// El orden de la lista es el orden de la carta.
+export const CATEGORIES: {
+  id: Category;
+  title: string;
+  neon?: readonly string[];
+  neonTone?: "highlight" | "accent";
+  hideTitle?: boolean;
+  badge?: string;
+}[] = [
   { id: "pasteleria", title: "Pastelería", hideTitle: true },
-  { id: "a_pedido", title: "Tortas a pedido", hideTitle: true, badge: "Torta a pedido" },
   { id: "acompanar", title: "Para acompañar", neon: ["¿Sin bebida para acompañar el postre?", "Elegí tu favorita"] },
+  { id: "a_pedido", title: "Tortas a pedido", neon: ["Pedí con anticipación"], neonTone: "highlight", badge: "Torta a pedido" },
 ];
 
 export type Zone = {

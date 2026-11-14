@@ -62,7 +62,7 @@ export function Menu({ products }: { products: Product[] | null }) {
                 </h3>
                 <NeonSign
                   phrases={cat.neon}
-                  tone="accent"
+                  tone={cat.neonTone ?? "accent"}
                   shrinkLong={false}
                   className="font-hand py-2 text-[clamp(2rem,6vw,3.25rem)] leading-[1.05]"
                 />

@@ -19,7 +19,8 @@ export default function ZonesMapCanvas({ zones }: { zones: Zones }) {
 
   useEffect(() => {
     const [accent, highlight, ink] = [token("--accent"), token("--highlight"), token("--on-color")];
-    const tones = [accent, highlight, ink]; // el 3er color (marrón) va más suave, ver fill-opacity
+    // 0 lavanda (cerca), 1 durazno (más lejos)
+    const tones = [accent, highlight, ink];
 
     const bounds = new maplibregl.LngLatBounds();
     zones.features.forEach((f) => f.geometry.coordinates.forEach((poly) => poly[0].forEach((p) => bounds.extend(p as [number, number]))));
@@ -45,7 +46,7 @@ export default function ZonesMapCanvas({ zones }: { zones: Zones }) {
       const layers = map.getStyle().layers;
       const lastShape = layers.findLastIndex((l) => l.type !== "symbol");
       const firstLabel = layers.slice(lastShape + 1).find((l) => l.type === "symbol")?.id;
-      map.addLayer({ id: "barrios-fill", type: "fill", source: "barrios", paint: { "fill-color": ["match", ["get", "tone"], 0, tones[0], 1, tones[1], tones[2]], "fill-opacity": ["match", ["get", "tone"], 2, 0.35, 0.6] } }, firstLabel);
+      map.addLayer({ id: "barrios-fill", type: "fill", source: "barrios", paint: { "fill-color": ["match", ["get", "tone"], 0, tones[0], 1, tones[1], tones[1]], "fill-opacity": 0.55 } }, firstLabel);
       map.addLayer({ id: "barrios-line", type: "line", source: "barrios", paint: { "line-color": ink, "line-width": 2, "line-opacity": 0.8 } }, firstLabel);
     });
 

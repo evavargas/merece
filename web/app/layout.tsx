@@ -20,16 +20,17 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: "light dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFFFF0" },
-    { media: "(prefers-color-scheme: dark)", color: "#2A1A18" },
-  ],
+  themeColor: "#FFFFF0",
 };
+
+// Aplica tema guardado antes del paint (evita flash). Por defecto: light.
+const themeInit = `(function(){try{if(localStorage.getItem("merece-theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-UY" className={`${bagel.variable} ${gochi.variable} ${mono.variable} ${nunito.variable}`}>
+    <html lang="es-UY" className={`${bagel.variable} ${gochi.variable} ${mono.variable} ${nunito.variable}`} suppressHydrationWarning>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
         {children}
         <Analytics />
       </body>

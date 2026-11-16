@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { OptionSelect } from "@/components/ui/select";
 import { formatPrice, parsePrice } from "@/lib/price";
-import { CATEGORIES, type Category, type Product } from "@/lib/api";
+import { CATEGORIES, isComboProduct, type Category, type Product } from "@/lib/api";
 
 const DESCRIPTION_MAX = 300; // igual que el límite del API y la base
 
@@ -183,7 +183,9 @@ function Row({ product: p, onSave, onPhoto, onDelete }: {
       </label>
       <div className="min-w-0">
         <p className="truncate font-bold">{p.name}</p>
-        <p className="text-xs text-muted-foreground">{CATEGORIES.find((c) => c.id === p.category)?.title}</p>
+        <p className="text-xs text-muted-foreground">
+          {CATEGORIES.find((c) => c.id === (isComboProduct(p) ? "combos" : p.category))?.title}
+        </p>
       </div>
       <label className="flex flex-col gap-1.5 text-xs font-bold sm:w-28">
         Precio $
@@ -224,7 +226,11 @@ function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Cate
     const price = parsePrice(String(f.get("price")));
     if (!price.ok) return setPriceError(price.error);
     setPriceError("");
-    await onCreate({ name: String(f.get("name")), category, price: price.value, stock: Number(f.get("stock") || 0) });
+    const rawName = String(f.get("name")).trim();
+    // Hasta aplicar migration 0004, combos se guardan como pastelería con nombre "Combo …".
+    const name = category === "combos" && !/^combo\b/i.test(rawName) ? `Combo ${rawName}` : rawName;
+    const savedCategory: Category = category === "combos" ? "pasteleria" : category;
+    await onCreate({ name, category: savedCategory, price: price.value, stock: Number(f.get("stock") || 0) });
     form.reset();
   }
 
@@ -243,13 +249,15 @@ function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Cate
   );
 }
 
-type Barrio = { id: string; name: string; enabled: boolean };
+type Barrio = { id: string; name: string; enabled: boolean; shipping: number | null };
 
 // Una sola selección que se guarda al presionar "Actualizar" (no al marcar cada barrio).
 function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | undefined> }) {
   const [barrios, setBarrios] = useState<Barrio[]>([]);
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [shippingDraft, setShippingDraft] = useState<Record<string, string>>({});
+  const [savedShipping, setSavedShipping] = useState<Record<string, number | null>>({});
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -258,13 +266,26 @@ function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | unde
     void guard(() => call<Barrio[]>("/api/barrios/all")).then((list) => {
       if (!list) return;
       const on = new Set(list.filter((b) => b.enabled).map((b) => b.id));
+      const ship: Record<string, number | null> = {};
+      const draft: Record<string, string> = {};
+      for (const b of list) {
+        ship[b.id] = b.shipping;
+        draft[b.id] = b.shipping === null ? "" : formatPrice(b.shipping);
+      }
       setBarrios(list);
       setSaved(on);
       setSelected(on);
+      setSavedShipping(ship);
+      setShippingDraft(draft);
     });
   }, [guard]);
 
-  const dirty = selected.size !== saved.size || [...selected].some((id) => !saved.has(id));
+  const shippingDirty = [...selected].some((id) => {
+    const parsed = parsePrice(shippingDraft[id] ?? "");
+    if (!parsed.ok) return true;
+    return parsed.value !== (savedShipping[id] ?? null);
+  });
+  const dirty = selected.size !== saved.size || [...selected].some((id) => !saved.has(id)) || shippingDirty;
   const norm = (t: string) => t.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
   const shown = barrios.filter((b) => norm(b.name).includes(norm(query)));
 
@@ -274,16 +295,28 @@ function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | unde
   };
 
   async function update() {
+    const shipping: Record<string, number | null> = {};
+    for (const id of selected) {
+      const parsed = parsePrice(shippingDraft[id] ?? "");
+      if (!parsed.ok) return;
+      shipping[id] = parsed.value;
+    }
     setBusy(true);
-    const ok = await guard(() => call("/api/barrios", json("PUT", { enabled: [...selected] })));
-    if (ok) { setSaved(new Set(selected)); setDone(true); }
+    const ok = await guard(() => call("/api/barrios", json("PUT", { enabled: [...selected], shipping })));
+    if (ok) {
+      setSaved(new Set(selected));
+      setSavedShipping((prev) => ({ ...prev, ...shipping }));
+      setDone(true);
+    }
     setBusy(false);
   }
 
   return (
     <section aria-labelledby="zonas-titulo">
       <h2 id="zonas-titulo" className="text-lg font-bold">Zonas con entrega</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Los barrios marcados aparecen en el mapa de la página. Los cambios se aplican al presionar Actualizar.</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Los barrios marcados aparecen en el mapa. El precio es el envío del día. Los cambios se aplican al presionar Actualizar.
+      </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <label className="flex flex-col gap-1.5 text-xs font-bold">
@@ -297,14 +330,37 @@ function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | unde
       </p>
 
       <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((b) => (
-          <li key={b.id}>
-            <label className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-3 ${selected.has(b.id) ? "bg-accent text-on-color" : "bg-card"}`}>
-              <input type="checkbox" checked={selected.has(b.id)} onChange={() => toggle(b.id)} className="h-5 w-5 shrink-0 accent-[var(--primary)]" />
-              <span className="font-bold">{b.name}</span>
-            </label>
-          </li>
-        ))}
+        {shown.map((b) => {
+          const on = selected.has(b.id);
+          const parsed = parsePrice(shippingDraft[b.id] ?? "");
+          return (
+            <li key={b.id} className={`rounded-xl px-3 py-2 ${on ? "bg-accent text-on-color" : "bg-card"}`}>
+              <label className="flex min-h-11 cursor-pointer items-center gap-3">
+                <input type="checkbox" checked={on} onChange={() => toggle(b.id)} className="h-5 w-5 shrink-0 accent-[var(--primary)]" />
+                <span className="font-bold">{b.name}</span>
+              </label>
+              {on && (
+                <label className="mt-1 flex items-center gap-2 pb-1 pl-8 text-xs font-bold">
+                  Envío $
+                  <input
+                    inputMode="decimal"
+                    value={shippingDraft[b.id] ?? ""}
+                    onChange={(e) => {
+                      setDone(false);
+                      setShippingDraft((d) => ({ ...d, [b.id]: e.target.value }));
+                    }}
+                    onBlur={() => {
+                      if (parsed.ok) setShippingDraft((d) => ({ ...d, [b.id]: parsed.value === null ? "" : formatPrice(parsed.value) }));
+                    }}
+                    placeholder="Consultar"
+                    aria-invalid={!parsed.ok}
+                    className={`${field} !min-h-9 ${on ? "border-on-color/30 bg-on-color/10 text-on-color placeholder:text-on-color/50" : ""}`}
+                  />
+                </label>
+              )}
+            </li>
+          );
+        })}
         {shown.length === 0 && <li className="text-sm text-muted-foreground">No hay barrios con ese nombre.</li>}
       </ul>
     </section>

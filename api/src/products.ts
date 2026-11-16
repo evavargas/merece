@@ -4,7 +4,7 @@ import { requireAdmin } from "./auth.js";
 import { revalidate } from "./revalidate.js";
 import { BUCKET, imageUrl, supabase } from "./supabase.js";
 
-const category = z.enum(["pasteleria", "a_pedido", "acompanar"]);
+const category = z.enum(["pasteleria", "a_pedido", "acompanar", "combos"]);
 
 const productInput = z.object({
   name: z.string().trim().min(1).max(80),

@@ -23,22 +23,22 @@
   --scrollbar: #b9a5d6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #2a1a18;
-    --foreground: #fffff0;
-    --card: #3d2825;
-    --card-hover: #4e3a3e;
-    --primary: #b9a5d6;
-    --primary-hover: #a48dc7;
-    --primary-foreground: #3d2825;
-    --muted: #4a332f;
-    --muted-foreground: #d9c9c0;
-    --border: #5a423d;
-    --input: #8f7772;
-    --ring: #b9a5d6;
-    --destructive: #ff8a80;
-  }
+/* Oscuro solo con clase .dark (toggle en el menú). Por defecto: light. */
+html.dark {
+  color-scheme: dark;
+  --background: #2a1a18;
+  --foreground: #fffff0;
+  --card: #3d2825;
+  --card-hover: #4e3a3e;
+  --primary: #b9a5d6;
+  --primary-hover: #a48dc7;
+  --primary-foreground: #3d2825;
+  --muted: #4a332f;
+  --muted-foreground: #d9c9c0;
+  --border: #5a423d;
+  --input: #8f7772;
+  --ring: #b9a5d6;
+  --destructive: #ff8a80;
 }
 
 @theme inline {
@@ -66,7 +66,7 @@
   --font-small: var(--font-nunito), sans-serif;
 }
 
-html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
+html { color-scheme: light; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
 body { background: var(--background); color: var(--foreground); font-family: var(--font-roboto-mono), ui-monospace, monospace; line-height: 1.6; }
 :focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }

@@ -3,7 +3,7 @@
 import { Component } from "react";
 
 // Minijuego "Mi primer espresso": tres niveles de toques a tiempo (espresso, leche, latte art).
-// Portado del boceto de design/espresso-game/Juego.dc.html. El sonido se sintetiza con Web Audio.
+// Portado de design/espresso-game/Juego.dc.html. El sonido se sintetiza con Web Audio.
 
 type Pt = [number, number];
 type Phase = "intro" | "ready" | "pouring" | "result";

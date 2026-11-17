@@ -2,11 +2,14 @@
 
 Landing de la pastelería sin gluten **Merece** (Montevideo) + panel `/admin` mínimo para controlar stock, precios y fotos.
 
+Para el **contexto del producto, avance, estándares y decisiones** (útil al hacer pull): [`docs/CONTEXTO-Y-AVANCE.md`](docs/CONTEXTO-Y-AVANCE.md).
+
 ```
 web/        Next.js 16 + Tailwind 4 — landing y /admin
 api/        Hono (Node) — API de productos y login por clave
 supabase/   Migración SQL (tabla + bucket de fotos) y seed
 design/     DESIGN.md, contexto del proyecto, logos y mockup original
+docs/       Contexto y avance de la landing
 ```
 
 ## Puesta en marcha

@@ -41,5 +41,5 @@ La tabla `barrios` guarda los 63 barrios de Montevideo con su polígono. En `/ad
 - Mapa interactivo con MapLibre sobre [OpenFreeMap](https://openfreemap.org) (gratis, sin API key, datos de OpenStreetMap).
 - Carga inicial: `node scripts/build-barrios.mjs && supabase db query --linked -f supabase/barrios_seed.sql` (no pisa lo ya habilitado). Los polígonos vienen de los barrios de la Intendencia de Montevideo, vía el espejo `cecimargolis/mapas-montevideo`, que no declara licencia: conviene confirmar la de la Intendencia antes de lanzar.
 - Migraciones: `supabase/migrations/0001…0005`; se aplican en orden con `supabase db query --linked -f <archivo>`.
-- Precio de envío del día: columna `barrios.shipping` (migración `0005`) y, mientras tanto, `products/config/shipping.json` en Storage. Se edita en `/admin` → Barrios.
+- Precio de envío del día: columna `barrios.shipping` (migración `0005`). Se edita en `/admin` → Barrios (fuente de verdad = la base).
 - El worker de MapLibre se copia a `web/public/maplibre/` en `predev`/`prebuild` (no se versiona).

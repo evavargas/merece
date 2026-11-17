@@ -453,7 +453,7 @@ function CartPanel() {
                     <Bike className="mb-1" />
                     <span className="font-bold">Envío</span>
                     <span className={`text-xs ${fulfillment === "envio" ? "text-background/80" : "text-muted-foreground"}`}>
-                      Según barrio · desde $ 80
+                      Según barrio
                     </span>
                   </button>
                 </div>

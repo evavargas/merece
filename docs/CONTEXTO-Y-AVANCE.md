@@ -81,8 +81,8 @@ Copy de opciones debe dejar claro **qué** se calienta (roll vs café). Evitar t
 - Mapa MapLibre (OpenFreeMap) + lista **Delivery en el día** (barrio + precio).
 - Leyenda: pedidos con anticipación / otra zona → consultar por WhatsApp.
 - Colores de mapa: cerca = lavanda, lejos = durazno (cocina entre Pocitos y Parque Rodó).
-- Precios de envío: **deben vivir atados al barrio** (migración `0005` → columna `barrios.shipping`; mientras tanto también `products/config/shipping.json` en Storage). Se editan en `/admin` → Barrios.
-- **No** hardcodear tarifas en el frontend ni etiquetarlas como “estimados” si ya son precios de catálogo.
+- Precios de envío: solo en `barrios.shipping` (migración `0005`). Se editan en `/admin` → Barrios.
+- **No** hardcodear tarifas en el repo; la base es la fuente de verdad.
 
 ### Admin
 
@@ -197,7 +197,7 @@ Instagram: `@merece.singluten`.
 
 ## 9. Deuda / pendientes conocidos
 
-- Aplicar en el proyecto Supabase remoto la migración `0005_barrios_shipping.sql` (columna `shipping`) si aún no está; hoy hay fallback por Storage.
+- (Hecho) Columna `barrios.shipping` en Supabase; tarifas solo vía admin/DB.
 - Confirmar licencia de polígonos de barrios (Intendencia / espejo usado en el seed).
 - Protocolos de inocuidad antes de cualquier claim celíaco.
 - Enum `product_category` + valor `combos` en DB si se quiere alinear admin/DB (hoy se puede mapear Combos → pastelería + nombre “Combo …”).

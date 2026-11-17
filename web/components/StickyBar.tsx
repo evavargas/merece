@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { CartButton, useCart } from "@/components/cart/Cart";
 import { WhatsApp } from "@/components/icons";
 
-// FAB WhatsApp (esquina) + al scrollear: Zonas + carrito; pasado el menú, también Carta.
+// FAB WhatsApp (esquina) + al scrollear: carrito; pasado el menú, también Carta.
 export function StickyBar() {
   const { orderUrl, count, canSend, setOpen } = useCart();
   const [pastHero, setPastHero] = useState(false);
@@ -62,12 +62,6 @@ export function StickyBar() {
                 Carta
               </a>
             )}
-            <a
-              href="#zonas"
-              className="inline-flex h-11 items-center rounded-full px-3 text-sm font-bold text-foreground no-underline hover:bg-muted sm:px-4"
-            >
-              Zonas de entrega
-            </a>
             <CartButton className="!h-11 !w-11" />
           </div>
         </div>

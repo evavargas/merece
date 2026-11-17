@@ -12,20 +12,7 @@ import { ZonesSection } from "@/components/ZonesSection";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { getProducts, getZones, INSTAGRAM_URL } from "@/lib/api";
 
-const STEPS = [
-  [
-    "Elegí",
-    "Agregá tus pedidos al carrito",
-  ],
-  [
-    "Validá",
-    "En el carrito revisá tu pedido y elegí la modalidad de envío. Recordá: las tortas a pedido llevan 48 hs de anticipación.",
-  ],
-  [
-    "Te lo llevamos",
-    "Una vez hecho el pedido, te escribimos para coordinar entrega y método de pago :)",
-  ],
-] as const;
+const STEPS = ["Elegí", "Confirmá", "Disfrutá :)"] as const;
 
 const NEON_PHRASES = ["Te lo merecés", "¿Qué se te antoja hoy?"] as const;
 
@@ -79,16 +66,15 @@ export default async function Home() {
               <div className="mb-12 flex flex-col items-center gap-2 text-center">
                 <h2 className={h2}>Pedí en tres pasos</h2>
               </div>
-              <ol className="grid gap-6 md:grid-cols-3">
-                {STEPS.map(([title, text], i) => (
-                  <li key={title} className="rounded-[28px] bg-muted p-7">
+              <ol className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
+                {STEPS.map((title, i) => (
+                  <li key={title} className="rounded-[22px] bg-muted p-3 sm:rounded-[28px] sm:p-6 md:p-7">
                     <span
-                      className={`font-display inline-flex h-11 w-11 items-center justify-center rounded-full text-[22px] text-on-color ${i === 1 ? "bg-highlight" : "bg-accent"}`}
+                      className={`font-display inline-flex h-9 w-9 items-center justify-center rounded-full text-lg text-on-color sm:h-11 sm:w-11 sm:text-[22px] ${i === 1 ? "bg-highlight" : "bg-accent"}`}
                     >
                       {i + 1}
                     </span>
-                    <h3 className="mt-4 text-lg font-bold">{title}</h3>
-                    <p className="mt-1 text-[15px]">{text}</p>
+                    <h3 className="mt-3 text-sm font-bold leading-snug sm:mt-4 sm:text-lg">{title}</h3>
                   </li>
                 ))}
               </ol>
@@ -103,9 +89,7 @@ export default async function Home() {
               {zones && zones.features.length > 0 ? (
                 <ZonesSection zones={zones} />
               ) : (
-                <p className="text-center text-sm text-muted-foreground">
-                  Para pedidos con anticipación, consultanos. ¿Otra zona? Escribinos por WhatsApp.
-                </p>
+                <p className="text-center text-sm text-muted-foreground">Para pedidos con anticipación, consultanos.</p>
               )}
             </div>
           </section>

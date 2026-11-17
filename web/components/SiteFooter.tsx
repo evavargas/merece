@@ -45,7 +45,6 @@ export function SiteFooter() {
         <div>
           <h2 className="text-sm font-extrabold">Para tener en cuenta</h2>
           <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
-            <li>Todo sin gluten · café de especialidad</li>
             <li>Tortas a pedido: mín. 48 hs de anticipación</li>
             <li>
               Delivery en Montevideo ·{" "}

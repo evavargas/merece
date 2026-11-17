@@ -7,6 +7,7 @@ import {
   coffeeUsesMilk,
   productIsAmericano,
   productIsCoffeeCombo,
+  productIsCookiesCappuCombo,
   productIsRollCappuCombo,
   productIsRolls,
   productUsesMilk,
@@ -65,6 +66,7 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
   const withMilk = productUsesMilk(p);
   const isRolls = productIsRolls(p);
   const isRollCappu = productIsRollCappuCombo(p);
+  const isCookiesCappu = productIsCookiesCappuCombo(p);
   const isAmericano = productIsAmericano(p);
   const isCoffeeCombo = productIsCoffeeCombo(p);
 
@@ -80,7 +82,10 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
   const tryAdd = () => {
     if (needsAdvance) setAskAdvance(true);
     else if (isRolls || isRollCappu) setAskRolls(true);
-    else if (isCoffeeCombo) setAskCoffee(true);
+    else if (isCookiesCappu) {
+      setPendingOpts({ coffee: "Cappuccino" });
+      setAskMilk(true);
+    } else if (isCoffeeCombo) setAskCoffee(true);
     else if (isAmericano) setAskAmericano(true);
     else if (withMilk) setAskMilk(true);
     else add(p);
@@ -152,7 +157,11 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
             Sin stock por hoy
           </span>
         )}
-        {needsAdvance && !soldOut && <p className="mt-2 text-xs font-bold text-accent">24 cm, 12 porciones</p>}
+        {needsAdvance && !soldOut && (
+          <p className="mt-2 text-xs font-bold text-accent">
+            {/brownie/i.test(p.name) ? "9 porciones" : "24 cm, 12 porciones"}
+          </p>
+        )}
         <div className="mt-auto pt-4">
           {soldOut ? (
             <a

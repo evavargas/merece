@@ -87,7 +87,7 @@ export const formatPriceLabel = (price: number | null) => (price === null ? "Con
 // Combos: categoría DB `combos`, nombre "Combo …", o "… + Café".
 export function isComboProduct(p: Pick<Product, "name" | "category">) {
   const n = p.name.trim();
-  return p.category === "combos" || /^combo\b/i.test(n) || /\+\s*café$/i.test(n);
+  return p.category === "combos" || /^combo\b/i.test(n) || /\+\s*café$/i.test(n) || /\+\s*cappu/i.test(n);
 }
 
 export function productsInCategory(products: Product[], cat: Category) {

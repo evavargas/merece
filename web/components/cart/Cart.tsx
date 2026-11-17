@@ -4,8 +4,8 @@ import Image from "next/image";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { shippingFor } from "@/components/cart/shipping";
 import { buttonClass } from "@/components/Button";
-import { Bike, Cart, Cup, Store, Trash, WhatsApp } from "@/components/icons";
-import { formatPriceLabel, whatsappUrl, type Product, type Zone } from "@/lib/api";
+import { Bike, Cart, Close, Cup, Store, Trash, WhatsApp } from "@/components/icons";
+import { whatsappUrl, type Product, type Zone } from "@/lib/api";
 import { formatPrice } from "@/lib/price";
 
 export const MILK_OPTIONS = ["Leche entera", "Deslactosada", "Vegetal (avena)"] as const;
@@ -74,13 +74,18 @@ export function productIsRollCappuCombo(p: Product) {
   return /\broll/i.test(p.name) && /cappu/i.test(p.name);
 }
 
+/** 6 mini cookies + Cappu: cappuccino fijo; solo eligen leche. */
+export function productIsCookiesCappuCombo(p: Product) {
+  return /cookie/i.test(p.name) && /cappu/i.test(p.name);
+}
+
 export function productIsAmericano(p: Product) {
   return /americano/i.test(p.name);
 }
 
-/** Combos donde eligen el café (ej. Mini cookies + Café). No incluye Roll + Cappu. */
+/** Combos donde eligen el café. No incluye combos con cappu fijo. */
 export function productIsCoffeeCombo(p: Product) {
-  if (productIsRollCappuCombo(p)) return false;
+  if (productIsRollCappuCombo(p) || productIsCookiesCappuCombo(p)) return false;
   const n = `${p.name} ${p.description ?? ""}`;
   return (/^combo\b/i.test(p.name.trim()) || /\+\s*café$/i.test(p.name.trim())) && /café|coffee/i.test(n);
 }
@@ -142,15 +147,6 @@ function buildMessage(
   const hasCake = lines.some((l) => l.product.category === "a_pedido");
   const cakeNote = hasCake ? "\nAcepto el mínimo de 48 horas de anticipación para tortas a pedido." : "";
   return `Hola Merece! Quiero hacer este pedido:\n${rows.join("\n")}${subtotalLine}${fulfillLine}${totalLine}\nPago por transferencia.${cakeNote}`;
-}
-
-function SectionTitle({ n, children }: { n: number; children: ReactNode }) {
-  return (
-    <h3 className="mb-3 flex items-center gap-2.5 text-sm font-extrabold uppercase tracking-wide">
-      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-[12px] text-background">{n}</span>
-      {children}
-    </h3>
-  );
 }
 
 export function CartProvider({ children, zones }: { children: ReactNode; zones: Zone[] }) {
@@ -288,241 +284,227 @@ function CartPanel() {
   const shipCost = fulfillment === "retiro" ? 0 : shipping;
   const total = showMoney && shipCost !== null ? subtotal + shipCost : null;
 
+  const barrioName = barrios.find((b) => b.id === barrioId)?.name;
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <button type="button" className="absolute inset-0 bg-foreground/40" aria-label="Cerrar pedido" onClick={() => setOpen(false)} />
       <aside className="relative flex h-full w-full max-w-md flex-col bg-background shadow-2xl" aria-label="Mi pedido">
-        <div className="flex items-center justify-between border-b border-foreground/10 px-5 py-4">
-          <h2 className="font-display text-2xl">Mi pedido {count > 0 ? `(${count})` : ""}</h2>
-          <button type="button" className="text-sm font-bold underline-offset-2 hover:underline" onClick={() => setOpen(false)}>
-            Cerrar
-          </button>
+        <div className="flex items-center justify-between gap-3 border-b border-foreground/10 px-4 py-3">
+          <h2 className="font-display text-xl leading-none">Pedido {count > 0 ? `(${count})` : ""}</h2>
+          <div className="flex items-center gap-2">
+            {lines.length > 0 && (
+              <button type="button" className="px-1 text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={clear}>
+                Vaciar
+              </button>
+            )}
+            <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted" aria-label="Cerrar" onClick={() => setOpen(false)}>
+              <Close className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-5">
+        <div className="flex-1 overflow-y-auto px-4 py-3">
           {lines.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Todavía no elegiste nada. Mirás la carta y tocá “Elegir”.</p>
+            <p className="text-sm text-muted-foreground">Vacío</p>
           ) : (
-            <div className="flex flex-col gap-8">
-              <section>
-                <SectionTitle n={1}>Tu pedido</SectionTitle>
-                <ul className="flex flex-col gap-3">
-                  {lines.map((l) => {
-                    const lineTotal = l.product.price === null ? null : l.product.price * l.qty;
-                    return (
-                      <li key={l.key} className="rounded-2xl border border-foreground/10 bg-card p-3">
-                        <div className="flex gap-3">
-                          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted text-muted-foreground">
-                            {l.product.imageUrl ? (
-                              <Image src={l.product.imageUrl} alt="" fill sizes="64px" className="object-cover" />
-                            ) : (
-                              <Cup className="absolute inset-0 m-auto h-8 w-8 opacity-50" />
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <p className="font-bold leading-snug">{l.product.name}</p>
-                                {lineExtras(l).length > 0 && (
-                                  <p className="mt-0.5 text-sm text-muted-foreground">{lineExtras(l).join(" · ")}</p>
-                                )}
-                              </div>
-                              <p className="shrink-0 font-bold">{lineTotal === null ? "Consultar" : `$ ${formatPrice(lineTotal)}`}</p>
+            <div className="flex flex-col gap-4">
+              <ul className="divide-y divide-foreground/10 rounded-2xl border border-foreground/10 bg-card">
+                {lines.map((l) => {
+                  const lineTotal = l.product.price === null ? null : l.product.price * l.qty;
+                  return (
+                    <li key={l.key} className="p-2.5">
+                      <div className="flex gap-2.5">
+                        <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-muted text-muted-foreground">
+                          {l.product.imageUrl ? (
+                            <Image src={l.product.imageUrl} alt="" fill sizes="44px" className="object-cover" />
+                          ) : (
+                            <Cup className="absolute inset-0 m-auto h-5 w-5 opacity-50" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold leading-snug">{l.product.name}</p>
+                              {lineExtras(l).length > 0 && (
+                                <p className="mt-0.5 text-xs text-muted-foreground">{lineExtras(l).join(" · ")}</p>
+                              )}
                             </div>
-                            {l.milk && (
-                              <label className="mt-2 block text-xs">
-                                <span className="sr-only">Leche</span>
+                            <p className="shrink-0 text-sm font-bold tabular-nums">
+                              {lineTotal === null ? "—" : `$ ${formatPrice(lineTotal)}`}
+                            </p>
+                          </div>
+                          {l.milk && (
+                            <label className="mt-1.5 block">
+                              <span className="sr-only">Leche</span>
+                              <select
+                                className="w-full rounded-lg border border-foreground/15 bg-background px-2 py-1 text-xs font-bold"
+                                value={l.milk}
+                                onChange={(e) => setMilk(l.key, e.target.value as MilkOption)}
+                              >
+                                {MILK_OPTIONS.map((m) => (
+                                  <option key={m} value={m}>
+                                    {m}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                          )}
+                          {l.glaze && (
+                            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                              <label className="min-w-0 flex-1">
+                                <span className="sr-only">Glaseado</span>
                                 <select
-                                  className="w-full rounded-xl border border-foreground/15 bg-background px-2.5 py-1.5 font-bold"
-                                  value={l.milk}
-                                  onChange={(e) => setMilk(l.key, e.target.value as MilkOption)}
+                                  className="w-full rounded-lg border border-foreground/15 bg-background px-2 py-1 text-xs font-bold"
+                                  value={l.glaze}
+                                  onChange={(e) => setRollsOpts(l.key, { glaze: e.target.value as GlazeOption, warm: !!l.warm })}
                                 >
-                                  {MILK_OPTIONS.map((m) => (
-                                    <option key={m} value={m}>
-                                      {m}
+                                  {GLAZE_OPTIONS.map((g) => (
+                                    <option key={g} value={g}>
+                                      {g}
                                     </option>
                                   ))}
                                 </select>
                               </label>
-                            )}
-                            {l.glaze && (
-                              <div className="mt-2 space-y-2">
-                                <label className="block text-xs">
-                                  <span className="sr-only">Glaseado</span>
-                                  <select
-                                    className="w-full rounded-xl border border-foreground/15 bg-background px-2.5 py-1.5 font-bold"
-                                    value={l.glaze}
-                                    onChange={(e) => setRollsOpts(l.key, { glaze: e.target.value as GlazeOption, warm: !!l.warm })}
-                                  >
-                                    {GLAZE_OPTIONS.map((g) => (
-                                      <option key={g} value={g}>
-                                        {g}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </label>
-                                <label className="flex items-center justify-between gap-2 text-xs font-bold">
-                                  <span>{l.warm ? "Roll caliente" : "Roll frío"}</span>
-                                  <button
-                                    type="button"
-                                    role="switch"
-                                    aria-checked={!!l.warm}
-                                    onClick={() => setRollsOpts(l.key, { glaze: l.glaze!, warm: !l.warm })}
-                                    className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${l.warm ? "bg-accent" : "bg-foreground/20"}`}
-                                  >
-                                    <span
-                                      className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-background shadow transition-transform ${l.warm ? "translate-x-4" : ""}`}
-                                    />
-                                  </button>
-                                </label>
-                              </div>
-                            )}
-                            {l.temp && (
-                              <label className="mt-2 flex items-center justify-between gap-2 text-xs font-bold">
-                                <span>{l.temp === "Fría" ? "Café frío" : "Café caliente"}</span>
+                              <label className="inline-flex items-center gap-1.5 text-xs font-bold">
+                                <span>{l.warm ? "Caliente" : "Frío"}</span>
                                 <button
                                   type="button"
                                   role="switch"
-                                  aria-checked={l.temp === "Fría"}
-                                  onClick={() => setTemp(l.key, l.temp === "Fría" ? "Caliente" : "Fría")}
-                                  className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${l.temp === "Fría" ? "bg-accent" : "bg-foreground/20"}`}
+                                  aria-checked={!!l.warm}
+                                  onClick={() => setRollsOpts(l.key, { glaze: l.glaze!, warm: !l.warm })}
+                                  className={`relative h-5 w-8 shrink-0 rounded-full transition-colors ${l.warm ? "bg-accent" : "bg-foreground/20"}`}
                                 >
                                   <span
-                                    className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-background shadow transition-transform ${l.temp === "Fría" ? "translate-x-4" : ""}`}
+                                    className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-background shadow transition-transform ${l.warm ? "translate-x-3" : ""}`}
                                   />
                                 </button>
                               </label>
-                            )}
-                            <div className="mt-2.5 flex items-center justify-between gap-2">
-                              <div className="inline-flex items-center rounded-full border border-foreground/15 bg-background">
-                                <button
-                                  type="button"
-                                  className="inline-flex h-9 w-9 items-center justify-center text-muted-foreground hover:text-foreground"
-                                  onClick={() => (l.qty <= 1 ? remove(l.key) : setQty(l.key, l.qty - 1))}
-                                  aria-label={l.qty <= 1 ? "Quitar" : "Menos"}
-                                >
-                                  {l.qty <= 1 ? <Trash /> : "−"}
-                                </button>
-                                <span className="min-w-6 text-center text-sm font-bold">{l.qty}</span>
-                                <button
-                                  type="button"
-                                  className="inline-flex h-9 w-9 items-center justify-center font-bold"
-                                  onClick={() => setQty(l.key, l.qty + 1)}
-                                  aria-label="Más"
-                                >
-                                  +
-                                </button>
-                              </div>
-                              <p className="text-xs text-muted-foreground">{formatPriceLabel(l.product.price)}</p>
                             </div>
+                          )}
+                          {l.temp && (
+                            <label className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold">
+                              <span>{l.temp === "Fría" ? "Frío" : "Caliente"}</span>
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={l.temp === "Fría"}
+                                onClick={() => setTemp(l.key, l.temp === "Fría" ? "Caliente" : "Fría")}
+                                className={`relative h-5 w-8 shrink-0 rounded-full transition-colors ${l.temp === "Fría" ? "bg-accent" : "bg-foreground/20"}`}
+                              >
+                                <span
+                                  className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-background shadow transition-transform ${l.temp === "Fría" ? "translate-x-3" : ""}`}
+                                />
+                              </button>
+                            </label>
+                          )}
+                          <div className="mt-1.5 inline-flex items-center rounded-full border border-foreground/15 bg-background">
+                            <button
+                              type="button"
+                              className="inline-flex h-7 w-7 items-center justify-center text-muted-foreground hover:text-foreground"
+                              onClick={() => (l.qty <= 1 ? remove(l.key) : setQty(l.key, l.qty - 1))}
+                              aria-label={l.qty <= 1 ? "Quitar" : "Menos"}
+                            >
+                              {l.qty <= 1 ? <Trash /> : "−"}
+                            </button>
+                            <span className="min-w-5 text-center text-xs font-bold">{l.qty}</span>
+                            <button
+                              type="button"
+                              className="inline-flex h-7 w-7 items-center justify-center text-sm font-bold"
+                              onClick={() => setQty(l.key, l.qty + 1)}
+                              aria-label="Más"
+                            >
+                              +
+                            </button>
                           </div>
                         </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
 
-              <section>
-                <SectionTitle n={2}>¿Retirás o te lo llevamos?</SectionTitle>
-                <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="inline-flex w-full rounded-xl border border-foreground/15 p-0.5">
                   <button
                     type="button"
                     onClick={() => setFulfillment("retiro")}
-                    className={`flex flex-col items-start gap-1 rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
-                      fulfillment === "retiro"
-                        ? "border-foreground bg-foreground text-background"
-                        : "border-foreground/15 bg-card text-foreground hover:border-foreground/40"
+                    className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 text-sm font-bold transition-colors ${
+                      fulfillment === "retiro" ? "bg-foreground text-background" : "text-foreground hover:bg-muted"
                     }`}
                   >
-                    <Store className="mb-1" />
-                    <span className="font-bold">Retiro</span>
-                    <span className={`text-xs ${fulfillment === "retiro" ? "text-background/80" : "text-muted-foreground"}`}>
-                      A coordinar · sin costo
-                    </span>
+                    <Store className="h-4 w-4" />
+                    Retiro
                   </button>
                   <button
                     type="button"
                     onClick={() => setFulfillment("envio")}
-                    className={`flex flex-col items-start gap-1 rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
-                      fulfillment === "envio"
-                        ? "border-foreground bg-foreground text-background"
-                        : "border-foreground/15 bg-card text-foreground hover:border-foreground/40"
+                    className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 text-sm font-bold transition-colors ${
+                      fulfillment === "envio" ? "bg-foreground text-background" : "text-foreground hover:bg-muted"
                     }`}
                   >
-                    <Bike className="mb-1" />
-                    <span className="font-bold">Envío</span>
-                    <span className={`text-xs ${fulfillment === "envio" ? "text-background/80" : "text-muted-foreground"}`}>
-                      Según barrio
-                    </span>
+                    <Bike className="h-4 w-4" />
+                    Envío
                   </button>
                 </div>
 
                 {fulfillment === "envio" && (
-                  <label className="mt-4 block text-sm">
-                    <span className="font-bold">Barrio</span>
+                  <label className="mt-2 block">
+                    <span className="sr-only">Barrio</span>
                     <select
-                      className="mt-1.5 w-full rounded-2xl border-2 border-foreground/15 bg-background px-3 py-3 font-bold"
+                      className="w-full rounded-xl border border-foreground/15 bg-background px-3 py-2 text-sm font-bold"
                       value={barrioId}
                       onChange={(e) => setBarrioId(e.target.value)}
                       required
                     >
-                      <option value="">Elegí tu barrio…</option>
+                      <option value="">Barrio…</option>
                       {barrios.map((b) => (
                         <option key={b.id} value={b.id}>
                           {b.name}
-                          {b.shipping !== null ? ` · $ ${formatPrice(b.shipping)}` : ""}
                         </option>
                       ))}
                     </select>
-                    <span className="mt-2 block text-xs text-muted-foreground">
-                      ¿Otra zona? Escribinos por WhatsApp.
-                    </span>
                   </label>
                 )}
-              </section>
+              </div>
             </div>
           )}
         </div>
 
-        <div className="border-t border-foreground/10 px-5 py-4">
+        <div className="border-t border-foreground/10 px-4 py-3">
           {showMoney && (
-            <div className="mb-3 space-y-1 text-sm">
-              <p className="flex justify-between">
+            <div className="mb-2 space-y-0.5 text-sm">
+              <p className="flex justify-between gap-3 text-muted-foreground">
                 <span>Subtotal</span>
-                <span className="font-bold">$ {formatPrice(subtotal)}</span>
+                <span className="tabular-nums">$ {formatPrice(subtotal)}</span>
               </p>
-              <p className="flex justify-between text-muted-foreground">
-                <span>{fulfillment === "retiro" ? "Retiro" : "Envío (est.)"}</span>
-                <span>
-                  {fulfillment === "retiro"
-                    ? "Sin costo"
-                    : shipCost !== null
-                      ? `$ ${formatPrice(shipCost)}`
-                      : "Elegí barrio"}
+              <p className="flex justify-between gap-3 text-muted-foreground">
+                <span>{fulfillment === "retiro" ? "Envío" : barrioName ?? "Envío"}</span>
+                <span className="tabular-nums">
+                  {fulfillment === "retiro" ? "Gratis" : shipCost !== null ? `$ ${formatPrice(shipCost)}` : "—"}
                 </span>
               </p>
               {total !== null && (
-                <p className="flex justify-between text-lg font-bold">
-                  <span>Total estimado</span>
-                  <span>$ {formatPrice(total)}</span>
+                <p className="flex justify-between gap-3 pt-0.5 font-bold">
+                  <span>Total</span>
+                  <span className="tabular-nums">$ {formatPrice(total)}</span>
                 </p>
               )}
             </div>
           )}
           {canSend ? (
-            <a href={orderUrl} target="_blank" rel="noopener noreferrer" className={`${buttonClass("primary")} w-full`} onClick={() => setOpen(false)}>
-              <WhatsApp /> Enviar pedido por WhatsApp
+            <a
+              href={orderUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${buttonClass("primary")} !min-h-11 w-full`}
+              onClick={() => setOpen(false)}
+            >
+              <WhatsApp /> WhatsApp
             </a>
           ) : (
-            <button type="button" className={`${buttonClass("primary")} w-full`} disabled>
-              <WhatsApp /> {lines.length === 0 ? "Elegí productos" : fulfillment === "envio" ? "Elegí tu barrio" : "Agregá productos"}
-            </button>
-          )}
-          <p className="mt-2 text-center text-xs text-muted-foreground">Pago por transferencia · te pasamos los datos por WhatsApp</p>
-          {lines.length > 0 && (
-            <button type="button" className="mt-3 w-full text-sm underline" onClick={clear}>
-              Vaciar pedido
+            <button type="button" className={`${buttonClass("primary")} !min-h-11 w-full`} disabled>
+              <WhatsApp /> {lines.length === 0 ? "Vacío" : fulfillment === "envio" ? "Elegí barrio" : "Vacío"}
             </button>
           )}
         </div>

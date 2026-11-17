@@ -10,7 +10,12 @@ export function ZonesSection({ zones }: { zones: Zones }) {
       tone: f.properties.tone,
       price: f.properties.shipping,
     }))
-    .sort((a, b) => a.name.localeCompare(b.name, "es"));
+    .sort((a, b) => {
+      const pa = a.price ?? Number.POSITIVE_INFINITY;
+      const pb = b.price ?? Number.POSITIVE_INFINITY;
+      if (pa !== pb) return pa - pb;
+      return a.name.localeCompare(b.name, "es");
+    });
 
   return (
     <div>
@@ -38,11 +43,7 @@ export function ZonesSection({ zones }: { zones: Zones }) {
         </div>
       </div>
 
-      <p className="mt-8 text-center text-sm text-muted-foreground">
-        Para pedidos con anticipación, consultanos.
-        <br />
-        ¿Otra zona? Escribinos por WhatsApp.
-      </p>
+      <p className="mt-8 text-center text-sm text-muted-foreground">Para pedidos con anticipación, consultanos.</p>
     </div>
   );
 }

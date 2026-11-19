@@ -47,7 +47,6 @@ export default function ZonesMapCanvas({ zones }: { zones: Zones }) {
       const lastShape = layers.findLastIndex((l) => l.type !== "symbol");
       const firstLabel = layers.slice(lastShape + 1).find((l) => l.type === "symbol")?.id;
       map.addLayer({ id: "barrios-fill", type: "fill", source: "barrios", paint: { "fill-color": ["match", ["get", "tone"], 0, tones[0], 1, tones[1], tones[1]], "fill-opacity": 0.55 } }, firstLabel);
-      map.addLayer({ id: "barrios-line", type: "line", source: "barrios", paint: { "line-color": ink, "line-width": 2, "line-opacity": 0.8 } }, firstLabel);
     });
 
     // Etiquetas HTML: usan las tipografías de la marca y no dependen de glifos del mapa base.
@@ -55,7 +54,7 @@ export default function ZonesMapCanvas({ zones }: { zones: Zones }) {
       const label = document.createElement("span");
       label.textContent = f.properties.name;
       label.setAttribute("aria-hidden", "true");
-      label.className = "pointer-events-none rounded-full bg-card/90 px-1.5 text-[10px] font-bold leading-4 sm:px-2.5 sm:py-0.5 sm:text-xs text-foreground shadow-sm";
+      label.className = "pointer-events-none card-surface rounded-full bg-[var(--tile-card)]/90 px-1.5 text-[10px] font-bold leading-4 sm:px-2.5 sm:py-0.5 sm:text-xs text-foreground shadow-sm";
       return new maplibregl.Marker({ element: label }).setLngLat(f.properties.label as [number, number]).addTo(map);
     });
 

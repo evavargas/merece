@@ -28,11 +28,11 @@ export const CATEGORIES: {
 }[] = [
   { id: "combos", title: "Combos", neon: ["Combos"], neonTone: "accent" },
   { id: "pasteleria", title: "Postres", neon: ["Deli merecidos"], neonTone: "accent" },
-  { id: "acompanar", title: "Para acompañar", neon: ["¿Sin bebida para acompañar el postre?", "Elegí tu bebida favorita"], neonTone: "accent" },
+  { id: "acompanar", title: "Para acompañar", neon: ["¿Qué café te llevás hoy?", "Elegí tu bebida favorita"], neonTone: "accent" },
   {
     id: "a_pedido",
     title: "Tortas a pedido",
-    neon: ["Vos pedí y te lo preparamos"],
+    neon: ["Para momentos especiales"],
     neonTone: "highlight",
     neonRuled: ["48 hs de anticipación"],
   },

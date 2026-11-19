@@ -21,6 +21,25 @@
   --band: #3d2825; /* secciones oscuras: marrón en ambos modos */
   --band-foreground: #fffff0;
   --scrollbar: #b9a5d6;
+  --hole: #3d2825; /* agujero del que se asoma el gato en el pie */
+  --drip: var(--background); /* cobertura del dripeado y fondo del hero: marfil en claro */
+  --drip-shine: rgb(255 255 255 / 0.85); /* reflejo de las gotas */
+  --hero-shine: transparent; /* brillo suave del hero */
+  /* Capas de la página. En claro replican los colores de siempre; en oscuro son los chocolates de la torta. */
+  --tile-card: var(--card); /* tarjetas de producto, pedido y etiquetas del mapa */
+  --tile-step: var(--carta); /* tarjetas de los pasos */
+  --tile-panel: var(--background); /* listado de zonas */
+  --pasos: var(--background);
+  --cierre: var(--carta);
+  --footer: var(--muted);
+  --btn-accent: var(--accent); /* botones de acento (Elegir) */
+  --drawer: var(--background); /* panel del pedido */
+  --scrim: rgb(61 40 37 / 0.4); /* velo detrás del pedido y los diálogos */
+  --btn-cierre: var(--accent); /* botón de Instagram del cierre */
+  --accent-ink: #6a4c9c; /* lavanda legible como texto sobre marfil/blanco */
+  --carta: #fce8da; /* durazno pastel: la carta en claro (el neón brilla solo en oscuro y en el cierre) */
+  --zonas: #eee8f7; /* lavanda pastel */
+  --carta-foreground: #3d2825;
 }
 
 /* Oscuro solo con clase .dark (toggle en el menú). Por defecto: light. */
@@ -30,8 +49,8 @@ html.dark {
   --foreground: #fffff0;
   --card: #3d2825;
   --card-hover: #4e3a3e;
-  --primary: #b9a5d6;
-  --primary-hover: #a48dc7;
+  --primary: #f0ae86; /* durazno en lugar de lavanda */
+  --primary-hover: #e8976a;
   --primary-foreground: #3d2825;
   --muted: #4a332f;
   --muted-foreground: #d9c9c0;
@@ -39,6 +58,40 @@ html.dark {
   --input: #8f7772;
   --ring: #b9a5d6;
   --destructive: #ff8a80;
+  --band: var(--carta); /* el neón apagado se mezcla con el fondo de la carta */
+  --carta: #56261c;
+  --zonas: #5c3828; /* chocolate con leche: del vainilla al chocolate el degradé pasa por tonos de café con leche */
+  --carta-foreground: #fffff0;
+  --accent-ink: #b9a5d6;
+  --hole: #120a09;
+  --drip: #7a4024; /* en oscuro: ganache de dulce de leche (más oscuro que un caramelo, más claro que el chocolate) */
+  --drip-shine: rgb(255 205 160 / 0.38);
+  --hero-shine: rgb(255 190 140 / 0.16);
+  /* Torta de chocolate: dulce de leche (hero y pasos) / amargo (carta) / con leche (zonas y pie) / vainilla (cierre). Tarjetas en chocolate blanco. */
+  --tile-card: #f0e2c8;
+  --tile-step: #f0e2c8; /* tarjetas de los pasos: chocolate blanco sobre el dulce de leche */
+  --tile-panel: #f0e2c8;
+  --pasos: var(--drip); /* capa de dulce de leche */
+  --cierre: #efe0b8; /* cierre vainilla */
+  --footer: #5c3828;
+  --btn-accent: var(--highlight); /* durazno en lugar de lavanda */
+  --drawer: #5c3828; /* el panel del pedido, en chocolate con leche */
+  --scrim: rgb(15 8 6 / 0.62); /* en oscuro el velo oscurece (con marfil lavaba la página) */
+  --btn-cierre: #b9a5d6; /* lavanda sobre el vainilla */
+}
+
+/* Dentro de una tarjeta de chocolate blanco (oscuro) los textos y controles pasan a tonos oscuros. */
+html.dark .card-surface {
+  --foreground: #3d2825;
+  --muted-foreground: #6b534f;
+  --muted: #e6d6b8;
+  --background: #f8eedc;
+  --card: #f8eedc;
+  --border: #d9c6a5;
+  --input: #9b8782;
+  --ring: #3d2825;
+  --accent-ink: #6a4c9c;
+  color: var(--foreground);
 }
 
 @theme inline {
@@ -58,6 +111,10 @@ html.dark {
   --color-accent: var(--accent);
   --color-highlight: var(--highlight);
   --color-on-color: var(--on-color);
+  --color-accent-ink: var(--accent-ink);
+  --color-carta: var(--carta);
+  --color-zonas: var(--zonas);
+  --color-carta-foreground: var(--carta-foreground);
   --color-band: var(--band);
   --color-band-foreground: var(--band-foreground);
   --font-display: var(--font-bagel), sans-serif;
@@ -87,6 +144,17 @@ body { background: var(--background); color: var(--foreground); font-family: var
     color-mix(in srgb, var(--neon) 22%, var(--band))
   );
   text-shadow: 0 0 1px var(--glow), 0 0 8px var(--glow), 0 0 22px var(--glow), 0 0 46px var(--glow), 0 0 90px var(--glow);
+}
+/* En claro: neón marrón chocolate (violeta en los subtítulos). El resplandor es del color del tubo, en capas: núcleo ajustado + halo suave.
+   Apagado queda tenue pero legible. */
+/* Mismo estilo en el cierre de oscuro, que ahora es vainilla: el neón blanco no se vería ahí. */
+:is(html:not(.dark) .carta, html.dark .cierre) .neon { --neon: var(--foreground); }
+:is(html:not(.dark) .carta, html.dark .cierre) .neon[data-tone="accent"] { --neon: var(--accent-ink); }
+:is(html:not(.dark) .carta, html.dark .cierre) .neon-letter {
+  --core: color-mix(in srgb, var(--neon) calc(var(--l) * 70%), transparent);
+  --halo: color-mix(in srgb, var(--neon) calc(var(--l) * 32%), transparent);
+  color: color-mix(in srgb, var(--neon) calc(var(--l) * 100%), color-mix(in srgb, var(--neon) 55%, var(--carta)));
+  text-shadow: 0 0 2px var(--core), 0 0 9px var(--halo), 0 0 22px var(--halo);
 }
 .neon-buzz { animation: neon-buzz 5.5s linear infinite; }
 
@@ -132,3 +200,98 @@ body { background: var(--background); color: var(--foreground); font-family: var
 .mnudge { animation: mnudge 0.9s ease-in-out infinite; }
 @keyframes mnudge { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-5px, 5px); } }
 @media (prefers-reduced-motion: reduce) { .mnudge { animation: none; } }
+
+/* Bordes del cierre (components en app/page.tsx, clase .cierre):
+   arriba, una ola suave del color del cierre sube sobre la sección lavanda y anticipa el final;
+   abajo, la puntilla CUELGA del cierre sobre el pie (semicírculos hacia abajo, con sombra suave). */
+.cierre { position: relative; z-index: 1; }
+.cierre::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -19px;
+  height: 20px;
+  background: var(--cierre);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='240'%20height='20'%20viewBox='0%200%20240%2020'%3E%3Cpath%20d='M0%2010%20Q30%20-4%2060%2010%20T120%2010%20T180%2010%20T240%2010%20V20%20H0%20Z'/%3E%3C/svg%3E") repeat-x left bottom / 240px 20px;
+  mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='240'%20height='20'%20viewBox='0%200%20240%2020'%3E%3Cpath%20d='M0%2010%20Q30%20-4%2060%2010%20T120%2010%20T180%2010%20T240%2010%20V20%20H0%20Z'/%3E%3C/svg%3E") repeat-x left bottom / 240px 20px;
+}
+.cierre::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -19px;
+  height: 20px;
+  background: radial-gradient(circle at 20px 0, var(--cierre) 19px, transparent 19.5px) 0 0 / 40px 20px repeat-x;
+  filter: drop-shadow(0 2px 3px rgb(61 40 37 / 0.16));
+  clip-path: inset(1px 0 -12px 0); /* corta la sombra que asomaba como una línea sobre la base */
+}
+
+/* Vapor de la taza del hero: cada hilito sube, ondula y se desvanece, desfasados entre sí. */
+.steam { transform-box: fill-box; transform-origin: 50% 100%; animation: steam 3.4s ease-in-out infinite; }
+.steam-2 { animation-delay: 0.55s; }
+.steam-3 { animation-delay: 1.1s; }
+@keyframes steam {
+  0% { opacity: 0; transform: translate(0, 5px) scaleY(0.7); }
+  30% { opacity: 1; }
+  60% { opacity: 0.9; transform: translate(1.5px, -2px) scaleY(1); }
+  100% { opacity: 0; transform: translate(-1.5px, -7px) scaleY(1.1); }
+}
+@media (prefers-reduced-motion: reduce) { .steam { animation: none; } }
+
+/* Garabato en lugar de línea recta junto a los subtítulos de la carta (se pinta con el color de fondo del elemento). */
+.squiggle {
+  height: 10px;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10' viewBox='0 0 20 10'%3E%3Cpath d='M0 5 Q5 0 10 5 T20 5' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x left center / 20px 10px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10' viewBox='0 0 20 10'%3E%3Cpath d='M0 5 Q5 0 10 5 T20 5' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x left center / 20px 10px;
+}
+
+/* Miguitas / sprinkles sueltos (components/Sprinkles.tsx). */
+.sprinkle { transform: rotate(var(--r)); animation: sprinkle 7s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes sprinkle {
+  0%, 100% { transform: translateY(0) rotate(var(--r)); }
+  50% { transform: translateY(-9px) rotate(calc(var(--r) + 14deg)); }
+}
+@media (prefers-reduced-motion: reduce) { .sprinkle { animation: none; } }
+
+/* Chispitas que titilan alrededor de los carteles de neón, solo mientras están encendidos. */
+.neon { position: relative; }
+.neon-spark {
+  position: absolute;
+  width: var(--s);
+  height: var(--s);
+  background: var(--neon);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  pointer-events: none;
+}
+.neon[data-lit="true"] .neon-spark { animation: spark 2.6s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes spark {
+  0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+@media (prefers-reduced-motion: reduce) { .neon[data-lit="true"] .neon-spark { animation: none; opacity: 0.85; } }
+
+
+/* Hero: del color de la cobertura (así el dripeado nace de él). En oscuro, con un brillo suave arriba a la izquierda
+   que se apaga antes del borde de abajo, para que ahí quede exactamente del color de las gotas. */
+.hero-bg { background: radial-gradient(ellipse 70% 75% at 18% 0%, var(--hero-shine), transparent 70%), var(--drip); }
+
+/* Cierre vainilla (oscuro): su neón y sus textos usan los tonos oscuros. */
+html.dark .cierre { --carta: var(--cierre); --carta-foreground: #3d2825; }
+
+/* Los diálogos se dibujan dentro de la tarjeta (que es de chocolate blanco) y las tarjetas de los pasos van sobre la capa vainilla:
+   ahí recuperan los colores normales del modo oscuro (.dialog-root / .on-dark). */
+html.dark .dialog-root,
+html.dark .on-dark {
+  --foreground: #fffff0;
+  --muted-foreground: #d9c9c0;
+  --muted: #4a332f;
+  --background: #2a1a18;
+  --card: #3d2825;
+  --border: #5a423d;
+  --input: #8f7772;
+  --ring: #b9a5d6;
+  --accent-ink: #b9a5d6;
+  color: var(--foreground);
+}
+

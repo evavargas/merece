@@ -1,18 +1,27 @@
 import { buttonClass } from "@/components/Button";
 import { CartProvider } from "@/components/cart/Cart";
+import { DripBand, LongDrip } from "@/components/DripBand";
 import { EggProvider } from "@/components/Egg";
 import { HeroBrand } from "@/components/HeroBrand";
 import { Instagram } from "@/components/icons";
 import { Menu } from "@/components/Menu";
 import { NeonSign } from "@/components/NeonSign";
+import { Sprinkles } from "@/components/Sprinkles";
 import { SiteFooter } from "@/components/SiteFooter";
+import { BagIcon, ChatCheckIcon, DeliveryIcon } from "@/components/StepIcons";
 import { SiteNav } from "@/components/SiteNav";
 import { StickyBar } from "@/components/StickyBar";
 import { ZonesSection } from "@/components/ZonesSection";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { getProducts, getZones, INSTAGRAM_URL } from "@/lib/api";
 
-const STEPS = ["Elegí", "Confirmá", "Disfrutá :)"] as const;
+const STEPS = [
+  { title: "Armá tu pedido", Icon: BagIcon },
+  { title: "Confirmá tu compra", Icon: ChatCheckIcon },
+  { title: "Te lo enviamos", Icon: DeliveryIcon },
+] as const;
+
+const CLOSING_PHRASES = ["Date el gusto", "Te lo merecés"] as const;
 
 const NEON_PHRASES = ["Te lo merecés", "¿Qué se te antoja hoy?"] as const;
 
@@ -41,49 +50,60 @@ export default async function Home() {
       <EggProvider>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
         <SiteNav />
-        <main className="pb-24">
-          <section id="inicio" className={`${section} flex flex-col items-center gap-4 pb-16 pt-8 text-center`}>
-            <HeroBrand />
-            <p className="max-w-xl text-xl">
-              Pastelería Sin Gluten
-              <br />y
-              <br />Café de especialidad
-            </p>
-          </section>
+        <main>
+          <div className="hero-bg -mt-17 pt-17">
+            <section id="inicio" className={`${section} relative flex flex-col items-center gap-4 pb-8 pt-8 text-center`}>
+              <Sprinkles tones={["bg-accent", "bg-highlight"]} />
+              <HeroBrand />
+              <p className="max-w-xl text-xl">
+                Pastelería Sin Gluten
+                <br />&amp;
+                <br />Café de especialidad
+              </p>
+            </section>
+          </div>
 
-          <section id="carta" className="scroll-mt-20 bg-band py-20 text-band-foreground">
-            <div className={section}>
-              <div className="mb-14 flex flex-col items-center gap-2 text-center">
+          <section id="carta" className="carta relative scroll-mt-20 bg-carta pb-0 pt-36 text-carta-foreground sm:pt-28">
+            <DripBand />
+            {/* Gotas largas de los bordes, de distinta altura (no simétricas). Desde 1280 px: izquierda 280 y derecha 196. Debajo de 1280: una sola, más corta, a la izquierda. */}
+            <LongDrip length={280} neck={18} r={12} className="left-3 hidden min-[1280px]:block" />
+            <LongDrip length={196} neck={16} r={11} className="right-3 hidden min-[1280px]:block" />
+            <LongDrip length={124} neck={14} r={9.5} className="left-4 min-[1280px]:hidden" />
+            <div className={`${section} relative`}>
+              <div className="mb-12 flex flex-col items-center gap-2 text-center">
                 <h2 className="sr-only">{NEON_PHRASES[0]}</h2>
-                <NeonSign phrases={NEON_PHRASES} className="font-hand mb-2 py-2 text-[clamp(2.75rem,11vw,5.5rem)] leading-[1.05]" />
+                <NeonSign phrases={NEON_PHRASES} className="font-hand py-2 text-[clamp(2.25rem,7vw,3.5rem)] leading-[1.05]" />
               </div>
               <Menu products={products} />
             </div>
           </section>
 
-          <section className="py-20">
-            <div className={section}>
+          <section className="relative bg-[var(--pasos)] pb-0 pt-32 sm:pt-40">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-carta to-transparent sm:h-40" />
+            <div className={`${section} relative`}>
               <div className="mb-12 flex flex-col items-center gap-2 text-center">
                 <h2 className={h2}>Pedí en tres pasos</h2>
               </div>
               <ol className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
-                {STEPS.map((title, i) => (
-                  <li key={title} className="rounded-[22px] bg-muted p-3 sm:rounded-[28px] sm:p-6 md:p-7">
+                {STEPS.map(({ title, Icon }, i) => (
+                  <li key={title} className="flex flex-col items-center rounded-[22px] card-surface bg-[var(--tile-step)] p-3 text-center sm:rounded-[28px] sm:p-6 md:p-7">
                     <span
                       className={`font-display inline-flex h-9 w-9 items-center justify-center rounded-full text-lg text-on-color sm:h-11 sm:w-11 sm:text-[22px] ${i === 1 ? "bg-highlight" : "bg-accent"}`}
                     >
                       {i + 1}
                     </span>
-                    <h3 className="mt-3 text-sm font-bold leading-snug sm:mt-4 sm:text-lg">{title}</h3>
+                    <Icon className="mt-3 h-14 w-14 text-foreground sm:mt-4 sm:h-20 sm:w-20" />
+                    <h3 className="mt-3 text-balance text-sm font-bold leading-snug sm:mt-4 sm:text-lg">{title}</h3>
                   </li>
                 ))}
               </ol>
             </div>
           </section>
 
-          <section id="zonas" className="scroll-mt-20 bg-muted py-20">
-            <div className={section}>
-              <div className="mb-8 flex flex-col items-center gap-2 text-center">
+          <section id="zonas" className="relative bg-zonas pb-20 pt-32 sm:pt-40">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-[var(--pasos)] to-transparent sm:h-40" />
+            <div className={`${section} relative`}>
+              <div className="mb-12 flex flex-col items-center gap-2 text-center">
                 <h2 className={h2}>Zonas de entrega</h2>
               </div>
               {zones && zones.features.length > 0 ? (
@@ -94,11 +114,13 @@ export default async function Home() {
             </div>
           </section>
 
-          <section className="bg-band pb-16 pt-[72px] text-band-foreground">
-            <div className={`${section} flex flex-col items-center gap-5 text-center`}>
-              <h2 className={h2}>Date el gusto, te lo merecés.</h2>
+          <section className="carta cierre card-surface bg-[var(--cierre)] pb-16 pt-[72px] text-carta-foreground">
+            <Sprinkles tones={["bg-accent", "bg-background"]} />
+            <div className={`${section} relative flex flex-col items-center gap-5 text-center`}>
+              <h2 className="sr-only">Date el gusto, te lo merecés.</h2>
+              <NeonSign phrases={CLOSING_PHRASES} tone="accent" shrinkLong={false} className="font-hand py-2 text-[clamp(2.25rem,7vw,3.5rem)] leading-[1.05]" />
               <p className="max-w-md text-[17px]">Seguinos en Instagram.</p>
-              <a href={INSTAGRAM_URL} className={`${buttonClass("accent")} font-small !min-h-[52px] !px-8 text-lg font-extrabold`}>
+              <a href={INSTAGRAM_URL} className={`${buttonClass("cierre")} font-small !min-h-[52px] !px-8 text-lg font-extrabold`}>
                 <Instagram className="h-6 w-6" /> @merece.singluten
               </a>
             </div>

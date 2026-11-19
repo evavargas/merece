@@ -20,11 +20,13 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: "light dark",
-  themeColor: "#FFFFF0",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFFF0" },
+    { media: "(prefers-color-scheme: dark)", color: "#2A1A18" },
+  ],
 };
 
-// Aplica tema guardado antes del paint (evita flash). Por defecto: light.
-const themeInit = `(function(){try{if(localStorage.getItem("merece-theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}})();`;
+const themeInit = `(function(){var s=null;try{s=localStorage.getItem("merece-theme")}catch(e){}if(s==="dark"||(s!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

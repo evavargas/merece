@@ -7,6 +7,14 @@ const OFF_MS = 320;
 // Las frases más largas que esto se dibujan más chicas para que todas ocupen un alto parecido.
 const LONG_PHRASE = 24;
 
+// Chispitas alrededor del cartel: posición, tamaño (en em, siguen el tamaño de la letra) y desfase.
+const SPARKS = [
+  { left: "-3%", top: "-8%", s: "0.3em", d: "0s" },
+  { left: "99%", top: "6%", s: "0.22em", d: "0.9s" },
+  { left: "94%", top: "80%", s: "0.28em", d: "1.6s" },
+  { left: "3%", top: "86%", s: "0.18em", d: "2.1s" },
+] as const;
+
 // Cartel de neón decorativo: el texto accesible va aparte (el h2 de la sección), por eso es aria-hidden.
 export function NeonSign({
   phrases,
@@ -84,6 +92,9 @@ export function NeonSign({
           </span>
         );
       })}
+      {SPARKS.map((k, i) => (
+        <span key={i} className="neon-spark" style={{ left: k.left, top: k.top, "--s": k.s, "--d": k.d } as React.CSSProperties} />
+      ))}
     </div>
   );
 }

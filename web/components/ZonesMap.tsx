@@ -18,7 +18,7 @@ export function ZonesMap({ zones }: { zones: Zones }) {
   }, []);
 
   return (
-    <div ref={box} className="relative aspect-[4/5] w-full sm:aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-[28px] bg-muted">
+    <div ref={box} className="relative aspect-[4/5] w-full overflow-hidden rounded-[28px] bg-muted sm:aspect-[4/3] lg:col-start-2 lg:row-start-1 lg:mt-0 lg:aspect-auto">
       {near && <Canvas zones={zones} />}
     </div>
   );

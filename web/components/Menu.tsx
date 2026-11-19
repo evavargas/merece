@@ -26,22 +26,22 @@ import { CATEGORIES, formatPriceLabel, productsInCategory, whatsappUrl, type Pro
 
 function AdvanceNoticeDialog({ name, onCancel, onConfirm }: { name: string; onCancel: () => void; onConfirm: () => void }) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-foreground/45" aria-label="Cerrar" onClick={onCancel} />
+    <div className="dialog-root fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <button type="button" className="absolute inset-0 bg-[var(--scrim)]" aria-label="Cerrar" onClick={onCancel} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="advance-title"
-        className="relative w-full max-w-sm rounded-[28px] border-2 border-foreground bg-background p-6 text-center shadow-2xl"
+        className="relative w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-2xl"
       >
-        <p className="font-hand text-xl uppercase tracking-[0.1em] text-highlight">Torta a pedido</p>
-        <h2 id="advance-title" className="font-display mt-2 text-3xl leading-tight">
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Torta a pedido</p>
+        <h2 id="advance-title" className="mt-1 text-xl font-bold leading-snug">
           {name}
         </h2>
         <p className="mt-4 text-[15px] leading-relaxed">
           Las tortas a pedido requieren un mínimo de <b>48 horas de anticipación</b>. ¿Estás de acuerdo y la agregamos a tu pedido?
         </p>
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
           <button type="button" className={`${buttonClass("outline")} w-full sm:w-auto`} onClick={onCancel}>
             Cancelar
           </button>
@@ -138,8 +138,8 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
   };
 
   return (
-    <li className={`flex flex-col overflow-hidden rounded-3xl bg-card ${soldOut ? "text-muted-foreground" : "text-foreground"}`}>
-      <div className={`relative aspect-[4/3] ${soldOut ? "bg-muted grayscale" : "bg-highlight"} text-on-color`}>
+    <li className={`flex flex-col overflow-hidden rounded-xl card-surface bg-[var(--tile-card)] ${soldOut ? "text-muted-foreground" : "text-foreground"}`}>
+      <div className={`relative aspect-[4/3] ${soldOut ? "bg-muted grayscale" : "bg-[var(--btn-accent)]"} text-on-color`}>
         {p.imageUrl ? (
           <Image src={p.imageUrl} alt={p.name} fill sizes="(min-width: 1024px) 320px, (min-width: 640px) 45vw, 100vw" className="object-cover" />
         ) : (
@@ -158,7 +158,7 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
           </span>
         )}
         {needsAdvance && !soldOut && (
-          <p className="mt-2 text-xs font-bold text-accent">
+          <p className="mt-2 text-xs font-bold text-accent-ink">
             {/brownie/i.test(p.name) ? "9 porciones" : "24 cm, 12 porciones"}
           </p>
         )}
@@ -227,7 +227,7 @@ function RuledNeon({ phrases }: { phrases: readonly string[] }) {
     <div className="flex items-center gap-3 sm:gap-5">
       <span
         aria-hidden="true"
-        className="h-px min-w-6 flex-1 bg-accent/45 shadow-[0_0_8px_color-mix(in_srgb,var(--accent)_55%,transparent)]"
+        className="squiggle min-w-6 flex-1 bg-carta-foreground/35"
       />
       <div className="min-w-0 max-w-[min(100%,20rem)] sm:max-w-md">
         <NeonSign
@@ -239,7 +239,7 @@ function RuledNeon({ phrases }: { phrases: readonly string[] }) {
       </div>
       <span
         aria-hidden="true"
-        className="h-px min-w-6 flex-1 bg-accent/45 shadow-[0_0_8px_color-mix(in_srgb,var(--accent)_55%,transparent)]"
+        className="squiggle min-w-6 flex-1 bg-carta-foreground/35"
       />
     </div>
   );
@@ -269,7 +269,7 @@ export function Menu({ products }: { products: Product[] | null }) {
                       phrases={cat.neon}
                       tone="highlight"
                       shrinkLong={false}
-                      className="font-hand mb-2 py-2 text-[clamp(2.75rem,11vw,5.5rem)] leading-[1.05]"
+                      className="font-hand mb-2 py-2 text-[clamp(2.25rem,7vw,3.5rem)] leading-[1.05]"
                     />
                   </div>
                 ) : (

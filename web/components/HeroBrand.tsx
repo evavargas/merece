@@ -22,7 +22,7 @@ export function HeroBrand() {
           <CatFace className="h-14 w-14 sm:h-16 sm:w-16" />
         </Link>
       ) : (
-        <Cup className="-mb-1 h-20 w-20 text-accent sm:h-24 sm:w-24" />
+        <Cup steam className="-mb-1 h-20 w-20 text-accent sm:h-24 sm:w-24" />
       )}
       <h1 className="text-[clamp(4.5rem,19vw,7.5rem)] leading-none">
         <button type="button" className="cursor-pointer border-0 bg-transparent p-0" onClick={tapMerece} aria-label="Merece">

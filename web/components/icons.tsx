@@ -8,12 +8,12 @@ export function Instagram({ className }: { className?: string }) {
   );
 }
 
-export function Cup({ className }: { className?: string }) {
+export function Cup({ className, steam = false }: { className?: string; steam?: boolean }) {
   return (
     <svg className={className} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M30 14 C26 22 34 26 30 34" />
-      <path d="M48 10 C44 20 54 24 48 34" />
-      <path d="M66 14 C62 22 70 26 66 34" />
+      <path className={steam ? "steam steam-1" : undefined} d="M30 14 C26 22 34 26 30 34" />
+      <path className={steam ? "steam steam-2" : undefined} d="M48 10 C44 20 54 24 48 34" />
+      <path className={steam ? "steam steam-3" : undefined} d="M66 14 C62 22 70 26 66 34" />
       <path d="M18 44 L78 44 L74 74 C73 82 66 88 58 88 L38 88 C30 88 23 82 22 74 Z" />
       <path d="M78 52 C92 52 92 72 76 72" />
     </svg>

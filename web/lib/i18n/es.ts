@@ -235,6 +235,7 @@ export const es = {
   "admin.tabProducts": "Productos",
   "admin.tabZones": "Barrios",
   "admin.logout": "Salir",
+  "admin.backToSite": "Volver al sitio",
   "admin.addPhoto": "+ Foto",
   "admin.changePhoto": "Cambiar foto de {name}",
   "admin.price": "Precio $",

@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "@/components/Button";
+import { Button, buttonClass } from "@/components/Button";
 import { OptionSelect } from "@/components/ui/select";
 import { formatPrice, parsePrice } from "@/lib/price";
 import { CATEGORIES, isComboProduct, type Category, type Product } from "@/lib/api";
@@ -22,6 +23,14 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 
 const displayCategory = (p: Pick<Product, "name" | "category">): Category => (isComboProduct(p) ? "combos" : p.category);
 const bySortOrder = (a: Product, b: Product) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name);
+
+function BackToSite({ className = "" }: { className?: string }) {
+  return (
+    <Link href="/" className={`${buttonClass("ghost")} !min-h-11 ${className}`}>
+      ← {t("admin.backToSite")}
+    </Link>
+  );
+}
 
 const json = (method: string, body: unknown): RequestInit => ({
   method,
@@ -65,6 +74,7 @@ function Login({ onDone }: { onDone: () => void }) {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-6">
+      <BackToSite className="self-start !px-0" />
       <h1 className="font-display text-5xl">{t("brand.name")}</h1>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1.5 font-bold">
@@ -124,9 +134,12 @@ function Panel({ onLogout }: { onLogout: () => void }) {
             </button>
           ))}
         </nav>
-        <Button variant="outline" className="!min-h-11 ml-auto md:ml-0 md:mt-auto" onClick={async () => { await call("/api/auth/logout", { method: "POST" }); onLogout(); }}>
-          {t("admin.logout")}
-        </Button>
+        <div className="ml-auto flex gap-2 md:ml-0 md:mt-auto md:flex-col md:items-stretch">
+          <BackToSite className="!px-5 md:text-left" />
+          <Button variant="outline" className="!min-h-11" onClick={async () => { await call("/api/auth/logout", { method: "POST" }); onLogout(); }}>
+            {t("admin.logout")}
+          </Button>
+        </div>
       </aside>
       <main className="min-w-0 flex-1 px-4 py-8 md:px-8">
         <h1 className="font-display mb-6 text-4xl">{t(tab === "productos" ? "admin.tabProducts" : "admin.tabZones")}</h1>

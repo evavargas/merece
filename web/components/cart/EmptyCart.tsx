@@ -2,6 +2,7 @@
 
 import { CatFace } from "@/components/CatFace";
 import { Wordmark } from "@/components/Wordmark";
+import { t } from "@/lib/i18n";
 
 const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 4, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
@@ -37,7 +38,7 @@ export function EmptyCart() {
           <Wordmark />
         </div>
       </div>
-      <p className="font-hand text-3xl leading-none">¡Pedite algo!</p>
+      <p className="font-hand text-3xl leading-none">{t("cart.empty")}</p>
     </div>
   );
 }

@@ -3,8 +3,6 @@
 import Image from "next/image";
 import { useState } from "react";
 import {
-  coffeeIsAmericano,
-  coffeeUsesMilk,
   productIsAmericano,
   productIsCoffeeCombo,
   productIsCookiesCappuCombo,
@@ -12,8 +10,6 @@ import {
   productIsRolls,
   productUsesMilk,
   useCart,
-  type CartOpts,
-  type CoffeeOption,
 } from "@/components/cart/Cart";
 import { AmericanoDialog } from "@/components/cart/AmericanoDialog";
 import { CoffeeDialog } from "@/components/cart/CoffeeDialog";
@@ -23,30 +19,34 @@ import { buttonClass } from "@/components/Button";
 import { Cup } from "@/components/icons";
 import { NeonSign } from "@/components/NeonSign";
 import { CATEGORIES, formatPriceLabel, productsInCategory, whatsappUrl, type Product } from "@/lib/api";
+import { coffeeIsAmericano, coffeeUsesMilk, type CartOpts, type CoffeeOption } from "@/lib/cart-options";
+import { t, tl } from "@/lib/i18n";
 
 function AdvanceNoticeDialog({ name, onCancel, onConfirm }: { name: string; onCancel: () => void; onConfirm: () => void }) {
   return (
     <div className="dialog-root fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-[var(--scrim)]" aria-label="Cerrar" onClick={onCancel} />
+      <button type="button" className="absolute inset-0 bg-[var(--scrim)]" aria-label={t("common.close")} onClick={onCancel} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="advance-title"
         className="relative w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-2xl"
       >
-        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Torta a pedido</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{t("advance.title")}</p>
         <h2 id="advance-title" className="mt-1 text-xl font-bold leading-snug">
           {name}
         </h2>
         <p className="mt-4 text-[15px] leading-relaxed">
-          Las tortas a pedido requieren un mínimo de <b>48 horas de anticipación</b>. ¿Estás de acuerdo y la agregamos a tu pedido?
+          {t("advance.bodyBefore")}
+          <b>{t("advance.bodyBold")}</b>
+          {t("advance.bodyAfter")}
         </p>
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
           <button type="button" className={`${buttonClass("outline")} w-full sm:w-auto`} onClick={onCancel}>
-            Cancelar
+            {t("common.cancel")}
           </button>
           <button type="button" className={`${buttonClass("highlight")} w-full sm:w-auto`} onClick={onConfirm}>
-            Sí, agregar
+            {t("advance.confirm")}
           </button>
         </div>
       </div>
@@ -83,7 +83,7 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
     if (needsAdvance) setAskAdvance(true);
     else if (isRolls || isRollCappu) setAskRolls(true);
     else if (isCookiesCappu) {
-      setPendingOpts({ coffee: "Cappuccino" });
+      setPendingOpts({ coffee: "cappuccino" });
       setAskMilk(true);
     } else if (isCoffeeCombo) setAskCoffee(true);
     else if (isAmericano) setAskAmericano(true);
@@ -115,7 +115,7 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
     setAskRolls(false);
     // Roll + Cappu: cappuccino fijo caliente; solo eligen leche.
     if (isRollCappu) {
-      setPendingOpts({ ...opts, coffee: "Cappuccino" });
+      setPendingOpts({ ...opts, coffee: "cappuccino" });
       setAskMilk(true);
       return;
     }
@@ -152,29 +152,30 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
           <span className="whitespace-nowrap text-sm font-bold tabular-nums">{formatPriceLabel(p.price)}</span>
         </div>
         {p.description && <p className="text-sm whitespace-pre-line">{p.description}</p>}
+        {!soldOut && <p className="text-xs font-bold text-muted-foreground">{t("product.stock", { count: p.stock })}</p>}
         {soldOut && (
           <span className="mt-3 inline-flex w-fit rounded-full bg-muted px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Sin stock por hoy
+            {t("product.soldOut")}
           </span>
         )}
         {needsAdvance && !soldOut && (
           <p className="mt-2 text-xs font-bold text-accent-ink">
-            {/brownie/i.test(p.name) ? "9 porciones" : "24 cm, 12 porciones"}
+            {t(/brownie/i.test(p.name) ? "product.brownieServings" : "product.cakeServings")}
           </p>
         )}
         <div className="mt-auto pt-4">
           {soldOut ? (
             <a
-              href={whatsappUrl(`Hola Merece! Quería consultar por: ${p.name}`)}
+              href={whatsappUrl(t("product.askMessage", { name: p.name }))}
               target="_blank"
               rel="noopener noreferrer"
               className={`${buttonClass("outline")} !min-h-11 w-full`}
             >
-              Consultar
+              {t("product.ask")}
             </a>
           ) : (
             <button type="button" onClick={tryAdd} className={`${buttonClass("accent")} !min-h-11 w-full`}>
-              Elegir
+              {t("product.choose")}
             </button>
           )}
         </div>
@@ -192,7 +193,7 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
       )}
       {askMilk && (
         <MilkDialog
-          name={pendingOpts.coffee ?? p.name}
+          name={pendingOpts.coffee ? t(`coffee.${pendingOpts.coffee}`) : p.name}
           onCancel={() => {
             setAskMilk(false);
             setPendingOpts({});
@@ -203,7 +204,7 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
       {askRolls && (
         <RollsDialog
           name={p.name}
-          continueLabel={isRollCappu || isCoffeeCombo ? "Continuar" : "Agregar"}
+          continueLabel={isRollCappu || isCoffeeCombo ? t("common.continue") : t("common.add")}
           onCancel={() => setAskRolls(false)}
           onConfirm={confirmRolls}
         />
@@ -247,50 +248,34 @@ function RuledNeon({ phrases }: { phrases: readonly string[] }) {
 
 export function Menu({ products }: { products: Product[] | null }) {
   if (!products) {
-    return <p className="text-center">No pudimos cargar la carta ahora. Escribinos por WhatsApp y te contamos qué hay.</p>;
+    return <p className="text-center">{t("menu.loadError")}</p>;
   }
   return (
     <div className="flex flex-col gap-16">
       {CATEGORIES.map((cat) => {
         const items = productsInCategory(products, cat.id);
         if (items.length === 0) return null;
-        const needsAdvance = cat.id === "a_pedido";
-        const isHighlight = (cat.neonTone ?? "accent") === "highlight";
+        const needsAdvance = cat.id === "made_to_order";
         return (
           <section key={cat.id} aria-labelledby={`cat-${cat.id}`}>
-            {cat.neon ? (
-              <div className="mb-8 flex flex-col gap-6">
-                <h3 id={`cat-${cat.id}`} className="sr-only">
-                  {cat.title}
-                </h3>
-                {isHighlight ? (
-                  <div className="flex flex-col items-center gap-2 text-center">
-                    <NeonSign
-                      phrases={cat.neon}
-                      tone="highlight"
-                      shrinkLong={false}
-                      className="font-hand mb-2 py-2 text-[clamp(2.25rem,7vw,3.5rem)] leading-[1.05]"
-                    />
-                  </div>
-                ) : (
-                  <RuledNeon phrases={cat.neon} />
-                )}
-                {cat.neonRuled && <RuledNeon phrases={cat.neonRuled} />}
-              </div>
-            ) : cat.hideTitle ? (
+            <div className="mb-8 flex flex-col gap-6">
               <h3 id={`cat-${cat.id}`} className="sr-only">
-                {cat.title}
+                {t(`category.${cat.id}.title`)}
               </h3>
-            ) : (
-              <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1">
-                <h3
-                  id={`cat-${cat.id}`}
-                  className="inline-flex min-h-9 items-center rounded-full bg-highlight px-5 text-sm font-bold uppercase tracking-widest text-on-color"
-                >
-                  {cat.title}
-                </h3>
-              </div>
-            )}
+              {cat.neonTone === "highlight" ? (
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <NeonSign
+                    phrases={tl(`category.${cat.id}.neon`)}
+                    tone="highlight"
+                    shrinkLong={false}
+                    className="font-hand mb-2 py-2 text-[clamp(2.25rem,7vw,3.5rem)] leading-[1.05]"
+                  />
+                </div>
+              ) : (
+                <RuledNeon phrases={tl(`category.${cat.id}.neon`)} />
+              )}
+              {cat.id === "made_to_order" && <RuledNeon phrases={tl("category.made_to_order.ruled")} />}
+            </div>
             <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((p) => (
                 <ProductCard key={p.id} p={p} needsAdvance={needsAdvance} />

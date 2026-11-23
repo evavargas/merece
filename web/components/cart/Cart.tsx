@@ -8,18 +8,10 @@ import { EmptyCart } from "@/components/cart/EmptyCart";
 import { OptionSelect } from "@/components/ui/select";
 import { Bike, Cart, Close, Cup, Store, Trash, WhatsApp } from "@/components/icons";
 import { whatsappUrl, type Product, type Zone } from "@/lib/api";
+import { MILK_OPTIONS, GLAZE_OPTIONS, type CartOpts, type DrinkTemp, type Fulfillment, type GlazeOption, type MilkOption, type RollsOpts } from "@/lib/cart-options";
+import { t } from "@/lib/i18n";
+import { buildOrderMessage, lineExtras } from "@/lib/order-message";
 import { formatPrice } from "@/lib/price";
-
-export const MILK_OPTIONS = ["Leche entera", "Deslactosada", "Vegetal (avena)"] as const;
-export type MilkOption = (typeof MILK_OPTIONS)[number];
-export const GLAZE_OPTIONS = ["Con glaseado", "Sin glaseado"] as const;
-export type GlazeOption = (typeof GLAZE_OPTIONS)[number];
-export const COFFEE_OPTIONS = ["Espresso", "Americano", "Cappuccino", "Flat white", "Iced latte"] as const;
-export type CoffeeOption = (typeof COFFEE_OPTIONS)[number];
-export type DrinkTemp = "Caliente" | "Fría";
-export type RollsOpts = { glaze: GlazeOption; warm: boolean };
-export type CartOpts = { milk?: MilkOption; glaze?: GlazeOption; warm?: boolean; temp?: DrinkTemp; coffee?: CoffeeOption };
-export type Fulfillment = "retiro" | "envio";
 
 export type CartLine = { key: string; product: Product; qty: number } & CartOpts;
 
@@ -59,14 +51,6 @@ export function productUsesMilk(p: Product) {
   return /leche|latte|cappuccino|capuchino|flat\s*white/i.test(`${p.name} ${p.description ?? ""}`);
 }
 
-export function coffeeUsesMilk(coffee: CoffeeOption) {
-  return /cappuccino|flat white|iced latte/i.test(coffee);
-}
-
-export function coffeeIsAmericano(coffee: CoffeeOption) {
-  return coffee === "Americano";
-}
-
 export function productIsRolls(p: Product) {
   return /\brolls?\b/i.test(`${p.name} ${p.description ?? ""}`);
 }
@@ -97,58 +81,9 @@ function lineKey(productId: string, opts?: CartOpts) {
   if (opts?.coffee) parts.push(opts.coffee);
   if (opts?.milk) parts.push(opts.milk);
   if (opts?.glaze) parts.push(opts.glaze);
-  if (opts?.warm) parts.push("caliente");
+  if (opts?.warm) parts.push("warm");
   if (opts?.temp) parts.push(opts.temp);
   return parts.join("::");
-}
-
-function lineExtras(l: CartLine) {
-  const bits: string[] = [];
-  if (l.coffee) bits.push(l.coffee);
-  if (l.milk) bits.push(l.milk);
-  if (l.glaze) bits.push(l.glaze);
-  if (l.glaze) bits.push(l.warm ? "roll caliente" : "roll frío");
-  if (l.temp) bits.push(l.temp === "Fría" ? "café frío" : "café caliente");
-  return bits;
-}
-
-function buildMessage(
-  lines: CartLine[],
-  fulfillment: Fulfillment,
-  barrio: BarrioOpt | undefined,
-  shipping: number | null,
-) {
-  if (lines.length === 0) {
-    return "Hola Merece! Quiero hacer un pedido.\nPago por transferencia.";
-  }
-  const rows = lines.map((l) => {
-    const price = l.product.price === null ? "Consultar" : `$ ${formatPrice(l.product.price)}`;
-    const extras = lineExtras(l);
-    const opts = extras.length ? ` · ${extras.join(" · ")}` : "";
-    const advance = l.product.category === "a_pedido" ? " · torta a pedido, +48 hs" : "";
-    return `${l.qty} × ${l.product.name} (${price})${opts}${advance}`;
-  });
-  const priced = lines.filter((l) => l.product.price !== null);
-  const subtotal = priced.reduce((s, l) => s + (l.product.price as number) * l.qty, 0);
-  const subtotalLine = priced.length === lines.length ? `\nSubtotal $ ${formatPrice(subtotal)}` : "";
-
-  let fulfillLine = "";
-  let totalLine = "";
-  if (fulfillment === "retiro") {
-    fulfillLine = "\nRetiro: a coordinar · sin costo";
-    if (priced.length === lines.length) totalLine = `\nTotal estimado $ ${formatPrice(subtotal)}`;
-  } else if (barrio && shipping !== null) {
-    fulfillLine = `\nEnvío a ${barrio.name}: ~$ ${formatPrice(shipping)} (estimado)`;
-    if (priced.length === lines.length) totalLine = `\nTotal estimado $ ${formatPrice(subtotal + shipping)}`;
-  } else if (barrio) {
-    fulfillLine = `\nEnvío a ${barrio.name}: a coordinar`;
-  } else {
-    fulfillLine = "\nEnvío: (elegí tu barrio)";
-  }
-
-  const hasCake = lines.some((l) => l.product.category === "a_pedido");
-  const cakeNote = hasCake ? "\nAcepto el mínimo de 48 horas de anticipación para tortas a pedido." : "";
-  return `Hola Merece! Quiero hacer este pedido:\n${rows.join("\n")}${subtotalLine}${fulfillLine}${totalLine}\nPago por transferencia.${cakeNote}`;
 }
 
 export function CartProvider({ children, zones }: { children: ReactNode; zones: Zone[] }) {
@@ -166,14 +101,14 @@ export function CartProvider({ children, zones }: { children: ReactNode; zones: 
 
   const [lines, setLines] = useState<CartLine[]>([]);
   const [open, setOpen] = useState(false);
-  const [fulfillment, setFulfillment] = useState<Fulfillment>("envio");
+  const [fulfillment, setFulfillment] = useState<Fulfillment>("delivery");
   const [barrioId, setBarrioId] = useState("");
 
   const api = useMemo<CartApi>(() => {
     const count = lines.reduce((s, l) => s + l.qty, 0);
-    const shipping = fulfillment === "envio" ? shippingFor(barrioId || null, shippingById) : 0;
+    const shipping = fulfillment === "delivery" ? shippingFor(barrioId || null, shippingById) : 0;
     const barrio = barrios.find((b) => b.id === barrioId);
-    const canSend = lines.length > 0 && (fulfillment === "retiro" || !!barrioId);
+    const canSend = lines.length > 0 && (fulfillment === "pickup" || !!barrioId);
     return {
       lines,
       count,
@@ -186,7 +121,7 @@ export function CartProvider({ children, zones }: { children: ReactNode; zones: 
       setBarrioId,
       shipping,
       canSend,
-      orderUrl: whatsappUrl(buildMessage(lines, fulfillment, barrio, shipping)),
+      orderUrl: whatsappUrl(buildOrderMessage(lines, fulfillment, barrio, shipping)),
       add: (p, opts) => {
         const key = lineKey(p.id, opts);
         setLines((prev) => {
@@ -283,24 +218,24 @@ function CartPanel() {
   const priced = lines.filter((l) => l.product.price !== null);
   const subtotal = priced.reduce((s, l) => s + (l.product.price as number) * l.qty, 0);
   const showMoney = lines.length > 0 && priced.length === lines.length;
-  const shipCost = fulfillment === "retiro" ? 0 : shipping;
+  const shipCost = fulfillment === "pickup" ? 0 : shipping;
   const total = showMoney && shipCost !== null ? subtotal + shipCost : null;
 
   const barrioName = barrios.find((b) => b.id === barrioId)?.name;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <button type="button" className="absolute inset-0 bg-[var(--scrim)]" aria-label="Cerrar pedido" onClick={() => setOpen(false)} />
-      <aside className="relative flex h-full w-full max-w-md flex-col bg-[var(--drawer)] shadow-2xl" aria-label="Mi pedido">
+      <button type="button" className="absolute inset-0 bg-[var(--scrim)]" aria-label={t("cart.closeOrderAria")} onClick={() => setOpen(false)} />
+      <aside className="relative flex h-full w-full max-w-md flex-col bg-[var(--drawer)] shadow-2xl" aria-label={t("cart.ariaEmpty")}>
         <div className="flex items-center justify-between gap-3 border-b border-foreground/10 px-4 py-3">
-          <h2 className="text-base font-bold leading-none">Mi pedido {count > 0 ? `(${count})` : ""}</h2>
+          <h2 className="text-base font-bold leading-none">{t("cart.title")} {count > 0 ? `(${count})` : ""}</h2>
           <div className="flex items-center gap-2">
             {lines.length > 0 && (
               <button type="button" className="px-1 text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={clear}>
-                Vaciar
+                {t("cart.clear")}
               </button>
             )}
-            <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted" aria-label="Cerrar" onClick={() => setOpen(false)}>
+            <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted" aria-label={t("common.close")} onClick={() => setOpen(false)}>
               <Close className="h-4 w-4" />
             </button>
           </div>
@@ -338,16 +273,16 @@ function CartPanel() {
                           </div>
                           {l.milk && (
                             <div className="mt-1.5">
-                              <OptionSelect compact label="Leche" value={l.milk} onValueChange={(v) => setMilk(l.key, v as MilkOption)} options={MILK_OPTIONS.map((m) => ({ value: m, label: m }))} />
+                              <OptionSelect compact label={t("cart.milkLabel")} value={l.milk} onValueChange={(v) => setMilk(l.key, v as MilkOption)} options={MILK_OPTIONS.map((m) => ({ value: m, label: t(`milk.${m}`) }))} />
                             </div>
                           )}
                           {l.glaze && (
                             <div className="mt-1.5 flex flex-wrap items-center gap-2">
                               <div className="min-w-0 flex-1">
-                                <OptionSelect compact label="Glaseado" value={l.glaze} onValueChange={(v) => setRollsOpts(l.key, { glaze: v as GlazeOption, warm: !!l.warm })} options={GLAZE_OPTIONS.map((g) => ({ value: g, label: g }))} />
+                                <OptionSelect compact label={t("cart.glazeLabel")} value={l.glaze} onValueChange={(v) => setRollsOpts(l.key, { glaze: v as GlazeOption, warm: !!l.warm })} options={GLAZE_OPTIONS.map((g) => ({ value: g, label: t(`glaze.${g}`) }))} />
                               </div>
                               <label className="inline-flex items-center gap-1.5 text-xs font-bold">
-                                <span>{l.warm ? "Caliente" : "Frío"}</span>
+                                <span>{t(l.warm ? "cart.switchHot" : "cart.switchCold")}</span>
                                 <button
                                   type="button"
                                   role="switch"
@@ -364,16 +299,16 @@ function CartPanel() {
                           )}
                           {l.temp && (
                             <label className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold">
-                              <span>{l.temp === "Fría" ? "Frío" : "Caliente"}</span>
+                              <span>{t(l.temp === "cold" ? "cart.switchCold" : "cart.switchHot")}</span>
                               <button
                                 type="button"
                                 role="switch"
-                                aria-checked={l.temp === "Fría"}
-                                onClick={() => setTemp(l.key, l.temp === "Fría" ? "Caliente" : "Fría")}
-                                className={`relative h-5 w-8 shrink-0 rounded-full transition-colors ${l.temp === "Fría" ? "bg-accent" : "bg-foreground/20"}`}
+                                aria-checked={l.temp === "cold"}
+                                onClick={() => setTemp(l.key, l.temp === "cold" ? "hot" : "cold")}
+                                className={`relative h-5 w-8 shrink-0 rounded-full transition-colors ${l.temp === "cold" ? "bg-accent" : "bg-foreground/20"}`}
                               >
                                 <span
-                                  className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-background shadow transition-transform ${l.temp === "Fría" ? "translate-x-3" : ""}`}
+                                  className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-background shadow transition-transform ${l.temp === "cold" ? "translate-x-3" : ""}`}
                                 />
                               </button>
                             </label>
@@ -383,7 +318,7 @@ function CartPanel() {
                               type="button"
                               className="inline-flex h-7 w-7 items-center justify-center text-muted-foreground hover:text-foreground"
                               onClick={() => (l.qty <= 1 ? remove(l.key) : setQty(l.key, l.qty - 1))}
-                              aria-label={l.qty <= 1 ? "Quitar" : "Menos"}
+                              aria-label={l.qty <= 1 ? t("cart.qtyRemove") : t("cart.qtyLess")}
                             >
                               {l.qty <= 1 ? <Trash /> : "−"}
                             </button>
@@ -392,7 +327,7 @@ function CartPanel() {
                               type="button"
                               className="inline-flex h-7 w-7 items-center justify-center text-sm font-bold"
                               onClick={() => setQty(l.key, l.qty + 1)}
-                              aria-label="Más"
+                              aria-label={t("cart.qtyMore")}
                             >
                               +
                             </button>
@@ -408,29 +343,29 @@ function CartPanel() {
                 <div className="inline-flex w-full rounded-xl border border-foreground/15 p-0.5">
                   <button
                     type="button"
-                    onClick={() => setFulfillment("retiro")}
+                    onClick={() => setFulfillment("pickup")}
                     className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 text-sm font-bold transition-colors ${
-                      fulfillment === "retiro" ? "bg-foreground text-background" : "text-foreground hover:bg-muted"
+                      fulfillment === "pickup" ? "bg-foreground text-background" : "text-foreground hover:bg-muted"
                     }`}
                   >
                     <Store className="h-4 w-4" />
-                    Retiro
+                    {t("cart.pickup")}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFulfillment("envio")}
+                    onClick={() => setFulfillment("delivery")}
                     className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 text-sm font-bold transition-colors ${
-                      fulfillment === "envio" ? "bg-foreground text-background" : "text-foreground hover:bg-muted"
+                      fulfillment === "delivery" ? "bg-foreground text-background" : "text-foreground hover:bg-muted"
                     }`}
                   >
                     <Bike className="h-4 w-4" />
-                    Envío
+                    {t("cart.delivery")}
                   </button>
                 </div>
 
-                {fulfillment === "envio" && (
+                {fulfillment === "delivery" && (
                   <div className="mt-2">
-                    <OptionSelect compact label="Barrio" placeholder="Barrio…" value={barrioId} onValueChange={setBarrioId} options={barrios.map((b) => ({ value: b.id, label: b.name }))} />
+                    <OptionSelect compact label={t("cart.zoneLabel")} placeholder={t("cart.zonePlaceholder")} value={barrioId} onValueChange={setBarrioId} options={barrios.map((b) => ({ value: b.id, label: b.name }))} />
                   </div>
                 )}
               </div>
@@ -442,18 +377,18 @@ function CartPanel() {
           {showMoney && (
             <div className="mb-2 space-y-0.5 text-sm">
               <p className="flex justify-between gap-3 text-muted-foreground">
-                <span>Subtotal</span>
+                <span>{t("cart.subtotal")}</span>
                 <span className="tabular-nums">$ {formatPrice(subtotal)}</span>
               </p>
               <p className="flex justify-between gap-3 text-muted-foreground">
-                <span>{fulfillment === "retiro" ? "Envío" : barrioName ?? "Envío"}</span>
+                <span>{fulfillment === "pickup" ? t("cart.shipping") : barrioName ?? t("cart.shipping")}</span>
                 <span className="tabular-nums">
-                  {fulfillment === "retiro" ? "Gratis" : shipCost !== null ? `$ ${formatPrice(shipCost)}` : "—"}
+                  {fulfillment === "pickup" ? t("cart.free") : shipCost !== null ? `$ ${formatPrice(shipCost)}` : "—"}
                 </span>
               </p>
               {total !== null && (
                 <p className="flex justify-between gap-3 pt-0.5 font-bold">
-                  <span>Total</span>
+                  <span>{t("cart.total")}</span>
                   <span className="tabular-nums">$ {formatPrice(total)}</span>
                 </p>
               )}
@@ -461,7 +396,7 @@ function CartPanel() {
           )}
           {lines.length === 0 ? (
             <a href="#carta" className={`${buttonClass("primary")} !min-h-11 w-full`} onClick={() => setOpen(false)}>
-              Ver productos
+              {t("cart.viewProducts")}
             </a>
           ) : canSend ? (
             <a
@@ -471,11 +406,11 @@ function CartPanel() {
               className={`${buttonClass("primary")} !min-h-11 w-full`}
               onClick={() => setOpen(false)}
             >
-              <WhatsApp /> WhatsApp
+              <WhatsApp /> {t("cart.whatsapp")}
             </a>
           ) : (
             <button type="button" className={`${buttonClass("primary")} !min-h-11 w-full`} disabled>
-              <WhatsApp /> {fulfillment === "envio" ? "Elegí barrio" : "Pedido incompleto"}
+              <WhatsApp /> {t(fulfillment === "delivery" ? "cart.pickZone" : "cart.incomplete")}
             </button>
           )}
         </div>
@@ -490,7 +425,7 @@ export function CartButton({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={() => setOpen(true)}
-      aria-label={count ? `Mi pedido, ${count} productos` : "Mi pedido"}
+      aria-label={count ? t("cart.ariaCount", { count }) : t("cart.ariaEmpty")}
       className={`relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-foreground transition-colors hover:bg-muted ${className}`}
     >
       <Cart />

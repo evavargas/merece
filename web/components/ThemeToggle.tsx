@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "@/components/icons";
+import { t } from "@/lib/i18n";
 
 const KEY = "merece-theme";
 
@@ -54,8 +55,8 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={toggle}
-      aria-label={theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
-      title={theme === "dark" ? "Tema claro" : "Tema oscuro"}
+      aria-label={t(theme === "dark" ? "theme.toLightAria" : "theme.toDarkAria")}
+      title={t(theme === "dark" ? "theme.light" : "theme.dark")}
       className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-foreground/20 text-foreground transition-colors hover:bg-foreground/10 ${className}`}
     >
       {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

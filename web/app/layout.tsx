@@ -1,6 +1,7 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Bagel_Fat_One, Gochi_Hand, Nunito, Roboto_Mono } from "next/font/google";
+import { LOCALE, t } from "@/lib/i18n";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -11,11 +12,11 @@ const nunito = Nunito({ subsets: ["latin"], weight: "800", variable: "--font-nun
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "Merece · Pastelería sin gluten en Montevideo", template: "%s · Merece" },
+  title: { default: t("site.title"), template: t("site.titleTemplate") },
   description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },
-  openGraph: { type: "website", siteName: SITE_NAME, locale: "es_UY", url: "/", title: "Merece · Pastelería sin gluten en Montevideo", description: SITE_DESCRIPTION },
-  twitter: { card: "summary_large_image", title: "Merece · Pastelería sin gluten en Montevideo", description: SITE_DESCRIPTION },
+  openGraph: { type: "website", siteName: SITE_NAME, locale: LOCALE.replace("-", "_"), url: "/", title: t("site.title"), description: SITE_DESCRIPTION },
+  twitter: { card: "summary_large_image", title: t("site.title"), description: SITE_DESCRIPTION },
 };
 
 export const viewport: Viewport = {
@@ -30,7 +31,7 @@ const themeInit = `(function(){var s=null;try{s=localStorage.getItem("merece-the
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-UY" className={`${bagel.variable} ${gochi.variable} ${mono.variable} ${nunito.variable}`} suppressHydrationWarning>
+    <html lang={LOCALE} className={`${bagel.variable} ${gochi.variable} ${mono.variable} ${nunito.variable}`} suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
         {children}

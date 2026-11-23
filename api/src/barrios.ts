@@ -40,7 +40,7 @@ export const barrios = new Hono()
       .select("id, name, geometry, label, neighbors, shipping")
       .eq("enabled", true)
       .order("name");
-    if (error) return c.json({ error: "No se pudieron leer las zonas" }, 500);
+    if (error) return c.json({ error: "read_failed" }, 500);
     const rows = data as Row[];
     const tones = assignTones(rows);
     c.header("Cache-Control", "no-store");
@@ -62,28 +62,28 @@ export const barrios = new Hono()
   // Admin: todos los barrios (sin polígonos) para la lista de activar/desactivar + precio de envío.
   .get("/all", requireAdmin, async (c) => {
     const { data, error } = await supabase().from("barrios").select("id, name, enabled, shipping").order("name");
-    if (error) return c.json({ error: "No se pudieron leer los barrios" }, 500);
+    if (error) return c.json({ error: "read_failed" }, 500);
     return c.json(data);
   })
   // Admin: guarda la selección completa de una vez + precios de envío en la tabla.
   .put("/", requireAdmin, async (c) => {
     const parsed = body.safeParse(await c.req.json().catch(() => null));
-    if (!parsed.success) return c.json({ error: "Datos inválidos" }, 400);
+    if (!parsed.success) return c.json({ error: "invalid_input" }, 400);
     const ids = [...new Set(parsed.data.enabled)];
 
     const db = supabase();
     const { data: known, error: readError } = await db.from("barrios").select("id");
-    if (readError) return c.json({ error: "No se pudo guardar" }, 500);
+    if (readError) return c.json({ error: "save_failed" }, 500);
     const unknown = ids.filter((id) => !(known as { id: string }[]).some((k) => k.id === id));
     if (unknown.length) return c.json({ error: `Barrios inexistentes: ${unknown.join(", ")}` }, 400);
 
     const { error } = await db.rpc("set_enabled_barrios", { ids });
-    if (error) return c.json({ error: "No se pudo guardar" }, 500);
+    if (error) return c.json({ error: "save_failed" }, 500);
 
     if (parsed.data.shipping) {
       for (const [id, shipping] of Object.entries(parsed.data.shipping)) {
         const { error: shipErr } = await db.from("barrios").update({ shipping }).eq("id", id);
-        if (shipErr) return c.json({ error: "No se pudo guardar el envío" }, 500);
+        if (shipErr) return c.json({ error: "save_failed" }, 500);
       }
     }
 

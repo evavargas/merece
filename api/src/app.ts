@@ -11,7 +11,7 @@ export const app = new Hono()
 
 app.onError((err, c) => {
   console.error(err);
-  return c.json({ error: "Error interno" }, 500);
+  return c.json({ error: "internal_error" }, 500);
 });
 
 // Vercel (Hono zero-config) toma este archivo como entrada y exige el export por defecto.

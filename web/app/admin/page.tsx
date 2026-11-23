@@ -5,6 +5,7 @@ import { Button } from "@/components/Button";
 import { OptionSelect } from "@/components/ui/select";
 import { formatPrice, parsePrice } from "@/lib/price";
 import { CATEGORIES, isComboProduct, type Category, type Product } from "@/lib/api";
+import { t, tError } from "@/lib/i18n";
 
 const DESCRIPTION_MAX = 300; // igual que el límite del API y la base
 
@@ -15,9 +16,13 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   if (res.status === 401 && !path.endsWith("/login")) throw new Unauthorized();
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? "Algo salió mal");
+  if (!res.ok) throw new Error(tError(String(data.error ?? "")));
   return data as T;
 }
+
+// Where a product shows up on the landing: name-based combos go in "combos" whatever their stored category.
+const displayCategory = (p: Pick<Product, "name" | "category">): Category => (isComboProduct(p) ? "combos" : p.category);
+const bySortOrder = (a: Product, b: Product) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name);
 
 const json = (method: string, body: unknown): RequestInit => ({
   method,
@@ -35,7 +40,7 @@ export default function AdminPage() {
     call("/api/auth/me").then(() => setState("in"), () => setState("out"));
   }, []);
 
-  if (state === "loading") return <main className="p-8 text-center">Cargando…</main>;
+  if (state === "loading") return <main className="p-8 text-center">{t("admin.loading")}</main>;
   if (state === "out") return <Login onDone={() => setState("in")} />;
   return <Panel onLogout={() => setState("out")} />;
 }
@@ -61,14 +66,14 @@ function Login({ onDone }: { onDone: () => void }) {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-6">
-      <h1 className="font-display text-5xl">Merece</h1>
+      <h1 className="font-display text-5xl">{t("brand.name")}</h1>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1.5 font-bold">
-          Clave
+          {t("admin.password")}
           <input name="password" type="password" required autoFocus autoComplete="current-password" className={field} aria-describedby={error ? "login-error" : undefined} />
         </label>
         {error && <p id="login-error" role="alert" className="text-destructive">{error}</p>}
-        <Button disabled={busy}>{busy ? "Entrando…" : "Entrar"}</Button>
+        <Button disabled={busy}>{t(busy ? "admin.signingIn" : "admin.signIn")}</Button>
       </form>
     </main>
   );
@@ -99,12 +104,23 @@ function Panel({ onLogout }: { onLogout: () => void }) {
 
   const replace = (p: Product) => setProducts((all) => all.map((x) => (x.id === p.id ? p : x)));
 
+  // Swaps a product with its neighbour inside its section and saves the whole section order in one request.
+  const move = (cat: Category, id: string, dir: -1 | 1) => guard(async () => {
+    const ids = products.filter((p) => displayCategory(p) === cat).sort(bySortOrder).map((p) => p.id);
+    const from = ids.indexOf(id);
+    const to = from + dir;
+    if (from < 0 || to < 0 || to >= ids.length) return;
+    [ids[from], ids[to]] = [ids[to], ids[from]];
+    await call("/api/products/order", json("PUT", { ids }));
+    setProducts((all) => all.map((p) => (ids.includes(p.id) ? { ...p, sortOrder: ids.indexOf(p.id) } : p)));
+  });
+
   return (
     <div className="mx-auto flex min-h-dvh max-w-6xl flex-col md:flex-row">
       <aside className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-border p-4 md:sticky md:top-0 md:h-dvh md:w-60 md:shrink-0 md:flex-col md:items-stretch md:border-b-0 md:border-r md:p-6">
-        <p className="font-display text-3xl md:mb-4">Merece</p>
+        <p className="font-display text-3xl md:mb-4">{t("brand.name")}</p>
         <nav aria-label="Secciones" className="flex gap-2 md:flex-col">
-          {([["productos", "Productos"], ["barrios", "Barrios"]] as const).map(([id, label]) => (
+          {([["productos", t("admin.tabProducts")], ["barrios", t("admin.tabZones")]] as const).map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)} aria-current={tab === id ? "page" : undefined}
               className={`min-h-11 cursor-pointer rounded-full px-5 text-left font-bold ${tab === id ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
               {label}
@@ -112,38 +128,53 @@ function Panel({ onLogout }: { onLogout: () => void }) {
           ))}
         </nav>
         <Button variant="outline" className="!min-h-11 ml-auto md:ml-0 md:mt-auto" onClick={async () => { await call("/api/auth/logout", { method: "POST" }); onLogout(); }}>
-          Salir
+          {t("admin.logout")}
         </Button>
       </aside>
       <main className="min-w-0 flex-1 px-4 py-8 md:px-8">
-        <h1 className="font-display mb-6 text-4xl">{tab === "productos" ? "Productos" : "Barrios"}</h1>
+        <h1 className="font-display mb-6 text-4xl">{t(tab === "productos" ? "admin.tabProducts" : "admin.tabZones")}</h1>
       {error && <p role="alert" className="mb-4 rounded-xl bg-muted p-3 text-destructive">{error}</p>}
 
       {tab === "barrios" ? (
         <Zones guard={guard} />
       ) : (
         <>
-      <ul className="flex flex-col gap-3">
-        {products.map((p) => (
-          <Row
-            key={p.id}
-            product={p}
-            onSave={(patch) => guard(async () => replace(await call<Product>(`/api/products/${p.id}`, json("PATCH", patch))))}
-            onPhoto={(file) => guard(async () => {
-              const body = new FormData();
-              body.append("file", file);
-              replace(await call<Product>(`/api/products/${p.id}/image`, { method: "PUT", body }));
-            })}
-            onDelete={() => guard(async () => {
-              await call(`/api/products/${p.id}`, { method: "DELETE" });
-              setProducts((all) => all.filter((x) => x.id !== p.id));
-            })}
-          />
-        ))}
-      </ul>
+      <p className="mb-4 text-sm text-muted-foreground">{t("admin.orderHint")}</p>
+      {CATEGORIES.map((cat) => {
+        const items = products.filter((p) => displayCategory(p) === cat.id).sort(bySortOrder);
+        if (items.length === 0) return null;
+        return (
+          <section key={cat.id} className="mb-8" aria-labelledby={`admin-cat-${cat.id}`}>
+            <h2 id={`admin-cat-${cat.id}`} className="mb-3 text-lg font-bold">{t(`category.${cat.id}.title`)}</h2>
+            <ul className="flex flex-col gap-3">
+              {items.map((p, i) => (
+                <Row
+                  key={p.id}
+                  product={p}
+                  canUp={i > 0}
+                  canDown={i < items.length - 1}
+                  onMove={(dir) => move(cat.id, p.id, dir)}
+                  onSave={(patch) => guard(async () => replace(await call<Product>(`/api/products/${p.id}`, json("PATCH", patch))))}
+                  onPhoto={(file) => guard(async () => {
+                    const body = new FormData();
+                    body.append("file", file);
+                    replace(await call<Product>(`/api/products/${p.id}/image`, { method: "PUT", body }));
+                  })}
+                  onDelete={() => guard(async () => {
+                    await call(`/api/products/${p.id}`, { method: "DELETE" });
+                    setProducts((all) => all.filter((x) => x.id !== p.id));
+                  })}
+                />
+              ))}
+            </ul>
+          </section>
+        );
+      })}
 
       <NewProduct onCreate={(input) => guard(async () => {
-        const created = await call<Product>("/api/products", json("POST", input));
+        const section = displayCategory(input);
+        const sortOrder = 1 + Math.max(-1, ...products.filter((p) => displayCategory(p) === section).map((p) => p.sortOrder));
+        const created = await call<Product>("/api/products", json("POST", { ...input, sortOrder }));
         setProducts((all) => [...all, created]);
       })} />
         </>
@@ -153,8 +184,11 @@ function Panel({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-function Row({ product: p, onSave, onPhoto, onDelete }: {
+function Row({ product: p, canUp, canDown, onMove, onSave, onPhoto, onDelete }: {
   product: Product;
+  canUp: boolean;
+  canDown: boolean;
+  onMove: (dir: -1 | 1) => Promise<unknown>;
   onSave: (patch: { price: number | null; stock: number; description: string }) => Promise<unknown>;
   onPhoto: (f: File) => Promise<unknown>;
   onDelete: () => Promise<unknown>;
@@ -177,38 +211,40 @@ function Row({ product: p, onSave, onPhoto, onDelete }: {
     <li className="grid grid-cols-[64px_1fr] items-center gap-x-4 gap-y-3 rounded-2xl bg-card p-3 sm:grid-cols-[64px_1fr_auto_auto_auto]">
       <label className="relative flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-accent text-center text-[11px] font-bold leading-tight text-on-color focus-within:outline focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-ring">
         {/* eslint-disable-next-line @next/next/no-img-element -- miniatura de admin, no necesita optimización */}
-        {p.imageUrl ? <img src={p.imageUrl} alt="" className="h-full w-full object-cover" /> : "+ Foto"}
-        <span className="sr-only">Cambiar foto de {p.name}</span>
+        {p.imageUrl ? <img src={p.imageUrl} alt="" className="h-full w-full object-cover" /> : t("admin.addPhoto")}
+        <span className="sr-only">{t("admin.changePhoto", { name: p.name })}</span>
         <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) void run(() => onPhoto(f)); e.target.value = ""; }} />
       </label>
       <div className="min-w-0">
         <p className="truncate font-bold">{p.name}</p>
         <p className="text-xs text-muted-foreground">
-          {CATEGORIES.find((c) => c.id === (isComboProduct(p) ? "combos" : p.category))?.title}
+          {t(`category.${displayCategory(p)}.title`)}
         </p>
       </div>
       <label className="flex flex-col gap-1.5 text-xs font-bold sm:w-28">
-        Precio $
-        <input inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} onBlur={() => parsed.ok && setPrice(parsed.value === null ? "" : formatPrice(parsed.value))} placeholder="Consultar" aria-invalid={!parsed.ok} aria-describedby={parsed.ok ? undefined : `err-${p.id}`} className={field} />
+        {t("admin.price")}
+        <input inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} onBlur={() => parsed.ok && setPrice(parsed.value === null ? "" : formatPrice(parsed.value))} placeholder={t("price.ask")} aria-invalid={!parsed.ok} aria-describedby={parsed.ok ? undefined : `err-${p.id}`} className={field} />
       </label>
       <label className="flex flex-col gap-1.5 text-xs font-bold sm:w-24">
-        Stock
+        {t("admin.stock")}
         <input inputMode="numeric" value={stock} onChange={(e) => setStock(e.target.value)} className={field} />
       </label>
       <label className="col-span-2 flex flex-col gap-1.5 text-xs font-bold sm:order-last sm:col-span-full">
-        Descripción
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} maxLength={DESCRIPTION_MAX} placeholder="Lo que se ve en la carta debajo del nombre" className={`${field} py-2 font-normal`} />
+        {t("admin.description")}
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} maxLength={DESCRIPTION_MAX} placeholder={t("admin.descriptionPlaceholder")} className={`${field} py-2 font-normal`} />
         <span className="self-end font-normal text-muted-foreground">{description.length}/{DESCRIPTION_MAX}</span>
       </label>
       {!parsed.ok && <p id={`err-${p.id}`} role="alert" className="col-span-2 text-sm text-destructive sm:col-span-full">{parsed.error}</p>}
       <div className="col-span-2 flex gap-2 sm:col-span-1">
+        <Button variant="ghost" className="!min-h-11 !px-3" aria-label={t("admin.moveUp", { name: p.name })} disabled={!canUp || busy} onClick={() => run(() => onMove(-1))}>▲</Button>
+        <Button variant="ghost" className="!min-h-11 !px-3" aria-label={t("admin.moveDown", { name: p.name })} disabled={!canDown || busy} onClick={() => run(() => onMove(1))}>▼</Button>
         <Button className="!min-h-11 flex-1 !px-5" disabled={!dirty || !valid || busy} onClick={() => run(async () => { await onSave({ price: nextPrice, stock: nextStock, description: description.trim() }); setDescription((d) => d.trim()); })}>
-          Guardar
+          {t("admin.save")}
         </Button>
         {confirming ? (
-          <Button variant="outline" className="!min-h-11 !px-4 !border-destructive !text-destructive" onClick={() => run(onDelete)}>¿Borrar?</Button>
+          <Button variant="outline" className="!min-h-11 !px-4 !border-destructive !text-destructive" onClick={() => run(onDelete)}>{t("admin.confirmDelete")}</Button>
         ) : (
-          <Button variant="ghost" className="!min-h-11 !px-4" aria-label={`Borrar ${p.name}`} onClick={() => { setConfirming(true); setTimeout(() => setConfirming(false), 4000); }}>✕</Button>
+          <Button variant="ghost" className="!min-h-11 !px-4" aria-label={t("admin.delete", { name: p.name })} onClick={() => { setConfirming(true); setTimeout(() => setConfirming(false), 4000); }}>✕</Button>
         )}
       </div>
     </li>
@@ -216,7 +252,7 @@ function Row({ product: p, onSave, onPhoto, onDelete }: {
 }
 
 function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Category; price: number | null; stock: number }) => Promise<unknown> }) {
-  const [category, setCategory] = useState<Category>("pasteleria");
+  const [category, setCategory] = useState<Category>("desserts");
   const [priceError, setPriceError] = useState("");
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -229,21 +265,21 @@ function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Cate
     const rawName = String(f.get("name")).trim();
     // Hasta aplicar migration 0004, combos se guardan como pastelería con nombre "Combo …".
     const name = category === "combos" && !/^combo\b/i.test(rawName) ? `Combo ${rawName}` : rawName;
-    const savedCategory: Category = category === "combos" ? "pasteleria" : category;
+    const savedCategory: Category = category === "combos" ? "desserts" : category;
     await onCreate({ name, category: savedCategory, price: price.value, stock: Number(f.get("stock") || 0) });
     form.reset();
   }
 
   return (
     <form onSubmit={submit} className="mt-8 grid gap-3 rounded-2xl bg-muted p-4 sm:grid-cols-[1fr_auto_6rem_5rem_auto] sm:items-end">
-      <label className="flex flex-col gap-1.5 text-xs font-bold">Nuevo producto<input name="name" required maxLength={80} className={field} placeholder="Nombre" /></label>
+      <label className="flex flex-col gap-1.5 text-xs font-bold">{t("admin.newProduct")}<input name="name" required maxLength={80} className={field} placeholder={t("admin.name")} /></label>
       <div className="flex flex-col gap-1.5 text-xs font-bold">
-        Categoría
-        <OptionSelect label="Categoría" value={category} onValueChange={(v) => setCategory(v as Category)} options={CATEGORIES.map((c) => ({ value: c.id, label: c.title }))} />
+        {t("admin.category")}
+        <OptionSelect label={t("admin.category")} value={category} onValueChange={(v) => setCategory(v as Category)} options={CATEGORIES.map((c) => ({ value: c.id, label: t(`category.${c.id}.title`) }))} />
       </div>
-      <label className="flex flex-col gap-1.5 text-xs font-bold">Precio $<input name="price" inputMode="decimal" className={field} placeholder="Consultar" aria-invalid={!!priceError} aria-describedby={priceError ? "new-price-error" : undefined} /></label>
-      <label className="flex flex-col gap-1.5 text-xs font-bold">Stock<input name="stock" inputMode="numeric" pattern="[0-9]*" defaultValue="0" className={field} /></label>
-      <Button className="!min-h-11">Agregar</Button>
+      <label className="flex flex-col gap-1.5 text-xs font-bold">{t("admin.price")}<input name="price" inputMode="decimal" className={field} placeholder={t("price.ask")} aria-invalid={!!priceError} aria-describedby={priceError ? "new-price-error" : undefined} /></label>
+      <label className="flex flex-col gap-1.5 text-xs font-bold">{t("admin.stock")}<input name="stock" inputMode="numeric" pattern="[0-9]*" defaultValue="0" className={field} /></label>
+      <Button className="!min-h-11">{t("common.add")}</Button>
       {priceError && <p id="new-price-error" role="alert" className="text-sm text-destructive sm:col-span-full">{priceError}</p>}
     </form>
   );
@@ -313,20 +349,20 @@ function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | unde
 
   return (
     <section aria-labelledby="zonas-titulo">
-      <h2 id="zonas-titulo" className="text-lg font-bold">Zonas con entrega</h2>
+      <h2 id="zonas-titulo" className="text-lg font-bold">{t("admin.zonesTitle")}</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Los barrios marcados aparecen en el mapa. El precio es el envío del día. Los cambios se aplican al presionar Actualizar.
+        {t("admin.zonesHelp")}
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <label className="flex flex-col gap-1.5 text-xs font-bold">
-          Buscar barrio
-          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ej: Pocitos" className={field} />
+          {t("admin.searchZone")}
+          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("admin.searchPlaceholder")} className={field} />
         </label>
-        <Button className="!min-h-11" disabled={!dirty || busy} onClick={update}>{busy ? "Guardando…" : "Actualizar"}</Button>
+        <Button className="!min-h-11" disabled={!dirty || busy} onClick={update}>{t(busy ? "admin.saving" : "admin.update")}</Button>
       </div>
       <p role="status" className="mt-3 min-h-6 text-sm">
-        {done ? "Zonas actualizadas. El mapa de la página se renueva en hasta 30 segundos." : dirty ? "Hay cambios sin guardar." : `${selected.size} de ${barrios.length} barrios con entrega.`}
+        {done ? t("admin.zonesSaved") : dirty ? t("admin.unsaved") : t("admin.zonesCount", { selected: selected.size, total: barrios.length })}
       </p>
 
       <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -341,7 +377,7 @@ function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | unde
               </label>
               {on && (
                 <label className="mt-1 flex items-center gap-2 pb-1 pl-8 text-xs font-bold">
-                  Envío $
+                  {t("admin.shipping")}
                   <input
                     inputMode="decimal"
                     value={shippingDraft[b.id] ?? ""}
@@ -352,7 +388,7 @@ function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | unde
                     onBlur={() => {
                       if (parsed.ok) setShippingDraft((d) => ({ ...d, [b.id]: parsed.value === null ? "" : formatPrice(parsed.value) }));
                     }}
-                    placeholder="Consultar"
+                    placeholder={t("price.ask")}
                     aria-invalid={!parsed.ok}
                     className={`${field} !min-h-9 ${on ? "border-on-color/30 bg-on-color/10 text-on-color placeholder:text-on-color/50" : ""}`}
                   />
@@ -361,7 +397,7 @@ function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | unde
             </li>
           );
         })}
-        {shown.length === 0 && <li className="text-sm text-muted-foreground">No hay barrios con ese nombre.</li>}
+        {shown.length === 0 && <li className="text-sm text-muted-foreground">{t("admin.noZones")}</li>}
       </ul>
     </section>
   );

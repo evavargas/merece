@@ -7,7 +7,6 @@ web/        Next.js 16 + Tailwind 4 — landing y /admin
 api/        Hono (Node) — API de productos y login por clave
 supabase/   Migración SQL (tabla + bucket de fotos) y seed
 design/     DESIGN.md, contexto del proyecto, logos y mockup original
-docs/       Contexto y avance de la landing
 ```
 
 ## Puesta en marcha
@@ -24,11 +23,16 @@ docs/       Contexto y avance de la landing
 - **Sin usuarios:** `/admin` pide una clave (`ADMIN_PASSWORD`). El API la compara en tiempo constante y emite una cookie `httpOnly` de 12 h. 10 intentos fallidos bloquean la IP 15 min.
 - **Un solo origen:** Next reescribe `/api/*` hacia el API (`API_URL`), así la cookie no necesita CORS.
 - **Stock:** número de unidades por producto; `0` se muestra como "Sin stock por hoy". Precios en UYU con 2 decimales (formato `1.250,00`); precio vacío se muestra como "Consultar".
+- **Orden de la carta:** en `/admin → Productos` cada categoría se ordena con las flechas ▲▼ (se guarda al instante en `sort_order`). Las secciones salen en este orden: combos, cafés, postres, tortas a pedido.
+- **Stock en la carta y en el pedido:** cada tarjeta muestra "Quedan N" y el mensaje de WhatsApp lista cada producto con sus opciones y el stock disponible.
+- **Textos (i18n):** todos los textos de la landing están en `web/lib/i18n/es.ts` y se usan con `t("clave")`. El código, la API y la base guardan identificadores en inglés (categorías `combos`, `coffees`, `desserts`, `made_to_order`; opciones del carrito `whole`, `oat`, `pickup`, `delivery`…) y los errores del API son códigos (`wrong_password`); el español vive solo en el catálogo. Para otro idioma, crear otro archivo con las mismas claves y elegirlo en `lib/i18n/index.ts`.
 - **Fotos:** JPG/PNG/WebP hasta 5 MB, se guardan en el bucket público `products` de Supabase.
 - La landing se regenera cada 30 s, por eso los cambios del panel tardan hasta medio minuto en verse.
 - La `service_role` key vive solo en el API; la tabla tiene RLS activado y sin políticas.
 
 ## Deploy
+
+Antes de publicar una versión con cambios de base, correr las migraciones nuevas en el SQL Editor de Supabase. En particular `supabase/migrations/0006_english_category_values.sql` renombra las categorías (`pasteleria`→`desserts`, `acompanar`→`coffees`, `a_pedido`→`made_to_order`) **antes** de desplegar el API y la web que esperan los valores nuevos.
 
 `web/` en Vercel (variable `API_URL`). `api/` en cualquier host Node (`npm run build -w api && npm start -w api`).
 

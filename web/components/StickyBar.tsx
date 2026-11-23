@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CartButton, useCart } from "@/components/cart/Cart";
 import { WhatsApp } from "@/components/icons";
+import { t } from "@/lib/i18n";
 
 // FAB WhatsApp (esquina) + al scrollear: carrito; pasado el menú, también Productos.
 export function StickyBar() {
@@ -34,7 +35,7 @@ export function StickyBar() {
       href={orderUrl}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={count > 0 ? (canSend ? "Enviar pedido por WhatsApp" : "Abrir pedido") : "Pedí por WhatsApp"}
+      aria-label={t(count > 0 ? (canSend ? "bar.sendWhatsapp" : "bar.openOrder") : "bar.orderWhatsapp")}
       onClick={(e) => {
         if (count > 0 && !canSend) {
           e.preventDefault();
@@ -59,7 +60,7 @@ export function StickyBar() {
                 href="#carta"
                 className="inline-flex h-11 items-center rounded-full px-3 text-sm font-bold text-foreground no-underline hover:bg-muted sm:px-4"
               >
-                Productos
+                {t("bar.products")}
               </a>
             )}
             <CartButton className="!h-11 !w-11" />

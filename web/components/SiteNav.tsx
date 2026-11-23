@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CartButton } from "@/components/cart/Cart";
 import { useEgg } from "@/components/Egg";
 import { Wordmark } from "@/components/Wordmark";
+import { t } from "@/lib/i18n";
 
 // Barra superior fija: logo, enlace a Productos (desde md) y carrito. Sin fondo de color: solo un blur suave para que se lea sobre el contenido.
 export function SiteNav() {
@@ -15,7 +16,7 @@ export function SiteNav() {
         <Link
           href="#inicio"
           className="text-[clamp(1.4rem,4vw,1.75rem)] leading-none no-underline"
-          aria-label="Merece, ir al inicio"
+          aria-label={t("nav.homeAria")}
           onClick={tapMerece}
         >
           <Wordmark />
@@ -23,7 +24,7 @@ export function SiteNav() {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <a href="#carta" className="hidden text-sm font-bold text-foreground no-underline hover:underline md:inline">
-            Productos
+            {t("nav.products")}
           </a>
           <CartButton />
         </div>

@@ -14,22 +14,19 @@ import { StickyBar } from "@/components/StickyBar";
 import { ZonesSection } from "@/components/ZonesSection";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { getProducts, getZones, INSTAGRAM_URL } from "@/lib/api";
+import { t, tl } from "@/lib/i18n";
 
 const STEPS = [
-  { title: "Armá tu pedido", Icon: BagIcon },
-  { title: "Confirmá tu compra", Icon: ChatCheckIcon },
-  { title: "Te lo enviamos", Icon: DeliveryIcon },
+  { key: "steps.one", Icon: BagIcon },
+  { key: "steps.two", Icon: ChatCheckIcon },
+  { key: "steps.three", Icon: DeliveryIcon },
 ] as const;
-
-const CLOSING_PHRASES = ["Date el gusto", "Te lo merecés"] as const;
-
-const NEON_PHRASES = ["Te lo merecés", "¿Qué se te antoja hoy?"] as const;
 
 // Datos estructurados para buscadores. Sin dirección (solo delivery) y sin afirmaciones de aptitud para celíacos.
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Bakery",
-  name: "Merece",
+  name: t("brand.name"),
   description: SITE_DESCRIPTION,
   url: SITE_URL,
   image: `${SITE_URL}/opengraph-image.png`,
@@ -56,9 +53,11 @@ export default async function Home() {
               <Sprinkles tones={["bg-accent", "bg-highlight"]} />
               <HeroBrand />
               <p className="max-w-xl text-xl">
-                Pastelería Sin Gluten
-                <br />&amp;
-                <br />Café de especialidad
+                {t("hero.tagline1")}
+                <br />
+                {t("hero.tagline2")}
+                <br />
+                {t("hero.tagline3")}
               </p>
             </section>
           </div>
@@ -71,8 +70,8 @@ export default async function Home() {
             <LongDrip length={124} neck={14} r={9.5} className="left-4 min-[1280px]:hidden" />
             <div className={`${section} relative`}>
               <div className="mb-12 flex flex-col items-center gap-2 text-center">
-                <h2 className="sr-only">{NEON_PHRASES[0]}</h2>
-                <NeonSign phrases={NEON_PHRASES} className="font-hand py-2 text-[clamp(2.25rem,7vw,3.5rem)] leading-[1.05]" />
+                <h2 className="sr-only">{tl("menu.neon")[0]}</h2>
+                <NeonSign phrases={tl("menu.neon")} className="font-hand py-2 text-[clamp(2.25rem,7vw,3.5rem)] leading-[1.05]" />
               </div>
               <Menu products={products} />
             </div>
@@ -82,18 +81,18 @@ export default async function Home() {
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-carta to-transparent sm:h-40" />
             <div className={`${section} relative`}>
               <div className="mb-12 flex flex-col items-center gap-2 text-center">
-                <h2 className={h2}>Pedí en tres pasos</h2>
+                <h2 className={h2}>{t("steps.title")}</h2>
               </div>
               <ol className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
-                {STEPS.map(({ title, Icon }, i) => (
-                  <li key={title} className="flex flex-col items-center rounded-[22px] card-surface bg-[var(--tile-step)] p-3 text-center sm:rounded-[28px] sm:p-6 md:p-7">
+                {STEPS.map(({ key, Icon }, i) => (
+                  <li key={key} className="flex flex-col items-center rounded-[22px] card-surface bg-[var(--tile-step)] p-3 text-center sm:rounded-[28px] sm:p-6 md:p-7">
                     <span
                       className={`font-display inline-flex h-9 w-9 items-center justify-center rounded-full text-lg text-on-color sm:h-11 sm:w-11 sm:text-[22px] ${i === 1 ? "bg-highlight" : "bg-accent"}`}
                     >
                       {i + 1}
                     </span>
                     <Icon className="mt-3 h-14 w-14 text-foreground sm:mt-4 sm:h-20 sm:w-20" />
-                    <h3 className="mt-3 text-balance text-sm font-bold leading-snug sm:mt-4 sm:text-lg">{title}</h3>
+                    <h3 className="mt-3 text-balance text-sm font-bold leading-snug sm:mt-4 sm:text-lg">{t(key)}</h3>
                   </li>
                 ))}
               </ol>
@@ -104,12 +103,12 @@ export default async function Home() {
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-[var(--pasos)] to-transparent sm:h-40" />
             <div className={`${section} relative`}>
               <div className="mb-12 flex flex-col items-center gap-2 text-center">
-                <h2 className={h2}>Zonas de entrega</h2>
+                <h2 className={h2}>{t("zones.title")}</h2>
               </div>
               {zones && zones.features.length > 0 ? (
                 <ZonesSection zones={zones} />
               ) : (
-                <p className="text-center text-sm text-muted-foreground">Para pedidos con anticipación, consultanos.</p>
+                <p className="text-center text-sm text-muted-foreground">{t("zones.fallback")}</p>
               )}
             </div>
           </section>
@@ -117,9 +116,9 @@ export default async function Home() {
           <section className="carta cierre card-surface bg-[var(--cierre)] pb-16 pt-[72px] text-carta-foreground">
             <Sprinkles tones={["bg-accent", "bg-background"]} />
             <div className={`${section} relative flex flex-col items-center gap-5 text-center`}>
-              <h2 className="sr-only">Date el gusto, te lo merecés.</h2>
-              <NeonSign phrases={CLOSING_PHRASES} tone="accent" shrinkLong={false} className="font-hand py-2 text-[clamp(2.25rem,7vw,3.5rem)] leading-[1.05]" />
-              <p className="max-w-md text-[17px]">Seguinos en Instagram.</p>
+              <h2 className="sr-only">{t("closing.heading")}</h2>
+              <NeonSign phrases={tl("closing.neon")} tone="accent" shrinkLong={false} className="font-hand py-2 text-[clamp(2.25rem,7vw,3.5rem)] leading-[1.05]" />
+              <p className="max-w-md text-[17px]">{t("closing.follow")}</p>
               <a href={INSTAGRAM_URL} className={`${buttonClass("cierre")} font-small !min-h-[52px] !px-8 text-lg font-extrabold`}>
                 <Instagram className="h-6 w-6" /> @merece.singluten
               </a>

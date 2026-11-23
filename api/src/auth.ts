@@ -26,7 +26,7 @@ export const requireAdmin = createMiddleware(async (c, next) => {
     if (!token) throw new Error("no token");
     await verify(token, env().SESSION_SECRET, "HS256");
   } catch {
-    return c.json({ error: "No autorizado" }, 401);
+    return c.json({ error: "unauthorized" }, 401);
   }
   await next();
 });
@@ -44,7 +44,7 @@ export const auth = new Hono()
     if (!body.success || !passwordOk(body.data.password)) {
       const live = entry && entry.resetAt > now ? entry : { count: 0, resetAt: now + WINDOW_MS };
       fails.set(key, { ...live, count: live.count + 1 });
-      return c.json({ error: "Clave incorrecta" }, 401);
+      return c.json({ error: "wrong_password" }, 401);
     }
 
     fails.delete(key);

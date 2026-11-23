@@ -5,6 +5,7 @@ import type { LngLatBoundsLike } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef } from "react";
 import type { Zones } from "@/lib/api";
+import { t } from "@/lib/i18n";
 
 // Mapa base: OpenFreeMap (gratis, sin API key, datos de OpenStreetMap). Barrios: Intendencia de Montevideo.
 const STYLE = "https://tiles.openfreemap.org/styles/liberty";
@@ -68,7 +69,7 @@ export default function ZonesMapCanvas({ zones }: { zones: Zones }) {
   // por eso el contenedor llena a un padre absoluto con h-full en vez de ser absoluto él mismo.
   return (
     <div className="absolute inset-0">
-      <div ref={el} className="h-full w-full" role="region" aria-label="Mapa de los barrios donde entregamos" />
+      <div ref={el} className="h-full w-full" role="region" aria-label={t("zones.mapAria")} />
     </div>
   );
 }

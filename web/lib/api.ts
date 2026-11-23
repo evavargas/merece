@@ -1,6 +1,7 @@
+import { t } from "./i18n/index.ts";
 import { formatPrice } from "./price";
 
-export type Category = "pasteleria" | "a_pedido" | "acompanar" | "combos";
+export type Category = "combos" | "coffees" | "desserts" | "made_to_order";
 
 export type Product = {
   id: string;
@@ -13,30 +14,14 @@ export type Product = {
   sortOrder: number;
 };
 
-// `neon`: en vez de la etiqueta, la categoría se presenta con un cartel de neón que rota estas frases.
-// `neonTone`: color del cartel (por defecto lavanda).
-// `neonRuled`: cartel lavanda con líneas a los costados (puede ir debajo de un neon highlight).
-// `hideTitle`: sin etiqueta visible; el título queda solo para lectores de pantalla.
-// El orden de la lista es el orden de la carta.
-export const CATEGORIES: {
-  id: Category;
-  title: string;
-  neon?: readonly string[];
-  neonTone?: "highlight" | "accent";
-  neonRuled?: readonly string[];
-  hideTitle?: boolean;
-}[] = [
-  { id: "combos", title: "Combos", neon: ["Combos"], neonTone: "accent" },
-  { id: "pasteleria", title: "Postres", neon: ["Deli merecidos"], neonTone: "accent" },
-  { id: "acompanar", title: "Para acompañar", neon: ["¿Qué café te llevás hoy?", "Elegí tu bebida favorita"], neonTone: "accent" },
-  {
-    id: "a_pedido",
-    title: "Tortas a pedido",
-    neon: ["Para momentos especiales"],
-    neonTone: "highlight",
-    neonRuled: ["48 hs de anticipación"],
-  },
-];
+// Display order of the menu sections = order of this list. Their Spanish texts (title, neon phrases) are in lib/i18n/es.ts
+// under `category.<id>.*`. `neonTone` = neon color.
+export const CATEGORIES = [
+  { id: "combos", neonTone: "accent" },
+  { id: "coffees", neonTone: "accent" },
+  { id: "desserts", neonTone: "accent" },
+  { id: "made_to_order", neonTone: "highlight" },
+] as const satisfies readonly { id: Category; neonTone: "highlight" | "accent" }[];
 
 export type Zone = {
   type: "Feature";
@@ -48,13 +33,6 @@ export type Zones = { type: "FeatureCollection"; features: Zone[] };
 // Formato internacional sin "+" ni el 0 local (097 625 315 → 59897625315), como pide wa.me.
 export const WHATSAPP_NUMBER = "59897625315";
 export const whatsappUrl = (text: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
-
-// Mensaje corto al pedir un producto (siempre con número en el link: evita el bug de mandar a "elegí un chat").
-export function productOrderMessage(name: string, price: number | null, soldOut = false) {
-  if (soldOut) return `Hola Merece! Quería consultar por: ${name}`;
-  const priceBit = price === null ? "" : ` (${formatPriceLabel(price)})`;
-  return `Hola Merece! Quiero pedir: ${name}${priceBit}\nDelivery en Montevideo · Pago por transferencia.`;
-}
 
 export const INSTAGRAM_URL = "https://www.instagram.com/merece.singluten/";
 
@@ -82,7 +60,7 @@ export async function getZones(): Promise<Zones | null> {
   }
 }
 
-export const formatPriceLabel = (price: number | null) => (price === null ? "Consultar" : `$ ${formatPrice(price)}`);
+export const formatPriceLabel = (price: number | null) => (price === null ? t("price.ask") : `$ ${formatPrice(price)}`);
 
 // Combos: categoría DB `combos`, nombre "Combo …", o "… + Café".
 export function isComboProduct(p: Pick<Product, "name" | "category">) {
@@ -92,6 +70,6 @@ export function isComboProduct(p: Pick<Product, "name" | "category">) {
 
 export function productsInCategory(products: Product[], cat: Category) {
   if (cat === "combos") return products.filter(isComboProduct);
-  if (cat === "pasteleria") return products.filter((p) => p.category === "pasteleria" && !isComboProduct(p));
+  if (cat === "desserts") return products.filter((p) => p.category === "desserts" && !isComboProduct(p));
   return products.filter((p) => p.category === cat);
 }

@@ -1,3 +1,4 @@
+import { t as translate } from "./i18n/index.ts";
 // Precios en pesos uruguayos con 2 decimales. Formato es-UY: "." miles, "," decimales (ej: 1.250,50).
 export const MAX_PRICE = 1_000_000;
 
@@ -19,9 +20,9 @@ export function parsePrice(input: string): ParsedPrice {
   if (t === "") return { ok: true, value: null }; // vacío = "Consultar"
 
   const m = WITH_COMMA.exec(t) ?? WITH_DOT.exec(t);
-  if (!m) return { ok: false, error: "Ingresá un precio válido, con hasta 2 decimales (ej: 1.250,00)" };
+  if (!m) return { ok: false, error: translate("price.invalid") };
 
   const value = Number(`${m[1].replaceAll(".", "")}.${(m[2] ?? "").padEnd(2, "0")}`);
-  if (value > MAX_PRICE) return { ok: false, error: `El máximo es $ ${formatPrice(MAX_PRICE)}` };
+  if (value > MAX_PRICE) return { ok: false, error: translate("price.max", { max: formatPrice(MAX_PRICE) }) };
   return { ok: true, value };
 }

@@ -3,6 +3,7 @@ import { PeekingCat } from "@/components/PeekingCat";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Wordmark } from "@/components/Wordmark";
 import { INSTAGRAM_URL, WHATSAPP_NUMBER } from "@/lib/api";
+import { t } from "@/lib/i18n";
 
 function formatWaLink(n: string) {
   return `https://wa.me/${n}`;
@@ -23,7 +24,7 @@ export function SiteFooter() {
               href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Instagram de Merece"
+              aria-label={t("footer.instagramAria")}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90"
             >
               <Instagram className="h-5 w-5" />
@@ -32,16 +33,16 @@ export function SiteFooter() {
               href={formatWaLink(WHATSAPP_NUMBER)}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="WhatsApp de Merece"
+              aria-label={t("footer.whatsappAria")}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90"
             >
               <WhatsApp className="h-5 w-5" />
             </a>
           </div>
-          <a href="#inicio" className="text-[clamp(1.75rem,5vw,2.25rem)] leading-none text-foreground no-underline" aria-label="Merece">
+          <a href="#inicio" className="text-[clamp(1.75rem,5vw,2.25rem)] leading-none text-foreground no-underline" aria-label={t("brand.name")}>
             <Wordmark />
           </a>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Merece. Todos los derechos reservados.</p>
+          <p className="text-xs text-muted-foreground">{t("footer.rights", { year: new Date().getFullYear() })}</p>
         </div>
       </div>
     </footer>

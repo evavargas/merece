@@ -1,6 +1,7 @@
 import { ZonesMap } from "@/components/ZonesMap";
 import { formatPrice } from "@/lib/price";
 import type { Zones } from "@/lib/api";
+import { t } from "@/lib/i18n";
 
 export function ZonesSection({ zones }: { zones: Zones }) {
   const rows = [...zones.features]
@@ -36,7 +37,7 @@ export function ZonesSection({ zones }: { zones: Zones }) {
               <span className="whitespace-nowrap tabular-nums text-muted-foreground">
                 {r.price !== null && r.price !== undefined
                   ? `$ ${formatPrice(r.price)}`
-                  : "Consultar"}
+                  : t("price.ask")}
               </span>
             </li>
           ))}
@@ -45,7 +46,7 @@ export function ZonesSection({ zones }: { zones: Zones }) {
         {zones.features.length > 0 && <ZonesMap zones={zones} />}
 
         <p className="pt-6 text-center text-sm font-extrabold uppercase tracking-widest lg:col-span-2">
-          Delivery en el día, para pedidos con anticipación, consultanos.
+          {t("zones.note")}
         </p>
       </div>
     </div>

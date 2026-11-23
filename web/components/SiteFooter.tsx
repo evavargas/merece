@@ -9,7 +9,6 @@ function formatWaLink(n: string) {
   return `https://wa.me/${n}`;
 }
 
-// Pie de página: íconos de contacto, logo y selector de tema (sin inventar local ni mail).
 export function SiteFooter() {
   return (
     <footer className="relative bg-[var(--footer)] text-foreground">

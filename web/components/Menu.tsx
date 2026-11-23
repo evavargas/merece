@@ -113,7 +113,6 @@ function ProductCard({ p, needsAdvance }: { p: Product; needsAdvance: boolean })
 
   const confirmRolls = (opts: CartOpts) => {
     setAskRolls(false);
-    // Roll + Cappu: cappuccino fijo caliente; solo eligen leche.
     if (isRollCappu) {
       setPendingOpts({ ...opts, coffee: "cappuccino" });
       setAskMilk(true);

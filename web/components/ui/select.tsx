@@ -1,6 +1,5 @@
 "use client";
 
-// Select al estilo shadcn/ui (Radix). Reemplaza al <select> nativo (design/DESIGN.md).
 import { Select as S } from "radix-ui";
 
 const Chevron = () => (
@@ -15,7 +14,7 @@ export function OptionSelect({ value, onValueChange, options, label, placeholder
   options: { value: string; label: string }[];
   label: string;
   placeholder?: string;
-  compact?: boolean; // alto reducido para filas del carrito
+  compact?: boolean;
 }) {
   return (
     <S.Root value={value} onValueChange={onValueChange}>

@@ -5,7 +5,7 @@ import { createContext, useCallback, useContext, useRef, useState, type ReactNod
 type EggApi = { revealed: boolean; tapMerece: () => void };
 
 const Ctx = createContext<EggApi | null>(null);
-const WINDOW_MS = 500; // dos clics seguidos
+const WINDOW_MS = 500;
 
 export function useEgg() {
   const c = useContext(Ctx);
@@ -13,7 +13,6 @@ export function useEgg() {
   return c;
 }
 
-// Dos clics seguidos en “Merece” revelan el gatito del minijuego.
 export function EggProvider({ children }: { children: ReactNode }) {
   const [revealed, setRevealed] = useState(false);
   const lastTap = useRef(0);

@@ -1,4 +1,3 @@
-// Cart option ids (English). Their Spanish labels are in lib/i18n/es.ts: milk.*, glaze.*, coffee.*, drink.*.
 export const MILK_OPTIONS = ["whole", "lactose_free", "oat"] as const;
 export type MilkOption = (typeof MILK_OPTIONS)[number];
 export const GLAZE_OPTIONS = ["glazed", "plain"] as const;

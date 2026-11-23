@@ -5,7 +5,6 @@ import { CartButton, useCart } from "@/components/cart/Cart";
 import { WhatsApp } from "@/components/icons";
 import { t } from "@/lib/i18n";
 
-// FAB WhatsApp (esquina) + al scrollear: carrito; pasado el menú, también Productos.
 export function StickyBar() {
   const { orderUrl, count, canSend, setOpen } = useCart();
   const [pastHero, setPastHero] = useState(false);

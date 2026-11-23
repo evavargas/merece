@@ -1,13 +1,8 @@
-// Dripeado de cobertura entre el hero y la carta (como un drip cake). Todo en SVG, con un reflejo suave para que se vea brillante.
-// <1280 px: el patrón se repite sin estirarse. Desde 1280 px: N copias (N entero según el ancho) que se estiran solo en horizontal,
-// así los extremos del patrón coinciden con los bordes de la página y quedan ~90 px libres en cada borde para las gotas largas
-// (LongDrip), que nunca chocan con otra gota. Colores: --drip (cobertura) y --drip-shine (reflejo), en globals.css.
-const B = 10; // línea base de la cobertura
-const F = 16; // ancho del empalme curvo
+const B = 10;
+const F = 16;
 const W = 720;
 const H = 90;
 
-// (centro x, ancho del cuello, radio de la punta, largo total)
 const DROPS = [
   [140, 14, 9.5, 78],
   [232, 34, 19.5, 74],
@@ -30,7 +25,6 @@ function drop(cx: number, n: number, r: number, L: number) {
   );
 }
 
-// Reflejo de una gota: una línea fina a lo largo del cuello y un óvalo brillante en la punta.
 function Shine({ cx, n, r, L }: { cx: number; n: number; r: number; L: number }) {
   const top = L - 2 * r;
   const x = cx - n * (n >= 24 ? 0.28 : 0.17);
@@ -69,7 +63,6 @@ export function DripBand() {
   );
 }
 
-// Gota larga de borde (única, no se repite). `neck` = ancho del cuello, `r` = radio de la punta, `length` = largo total.
 export function LongDrip({ length, neck, r, className }: { length: number; neck: number; r: number; className: string }) {
   const w = 52;
   const cx = w / 2;

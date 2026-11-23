@@ -7,9 +7,8 @@ import { useEffect, useRef } from "react";
 import type { Zones } from "@/lib/api";
 import { t } from "@/lib/i18n";
 
-// Mapa base: OpenFreeMap (gratis, sin API key, datos de OpenStreetMap). Barrios: Intendencia de Montevideo.
 const STYLE = "https://tiles.openfreemap.org/styles/liberty";
-const AREA: LngLatBoundsLike = [[-56.5, -35.05], [-55.9, -34.65]]; // límite de paneo: todo el departamento
+const AREA: LngLatBoundsLike = [[-56.5, -35.05], [-55.9, -34.65]];
 
 maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
@@ -20,7 +19,6 @@ export default function ZonesMapCanvas({ zones }: { zones: Zones }) {
 
   useEffect(() => {
     const [accent, highlight, ink] = [token("--accent"), token("--highlight"), token("--on-color")];
-    // 0 lavanda (cerca), 1 durazno (más lejos)
     const tones = [accent, highlight, ink];
 
     const bounds = new maplibregl.LngLatBounds();
@@ -34,23 +32,21 @@ export default function ZonesMapCanvas({ zones }: { zones: Zones }) {
       maxBounds: AREA,
       minZoom: 10.5,
       maxZoom: 16,
-      cooperativeGestures: true, // en celular se mueve con 2 dedos: no secuestra el scroll de la página
+      cooperativeGestures: true,
       attributionControl: { compact: true, customAttribution: "Barrios: Intendencia de Montevideo" },
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
 
     map.on("load", () => {
-      el.current?.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show"); // arranca cerrada
+      el.current?.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
       map.addSource("barrios", { type: "geojson", data: zones as GeoJSON.FeatureCollection });
-      // Encima de toda la geometría del mapa base (calles, edificios) y por debajo de sus etiquetas de texto.
       const layers = map.getStyle().layers;
       const lastShape = layers.findLastIndex((l) => l.type !== "symbol");
       const firstLabel = layers.slice(lastShape + 1).find((l) => l.type === "symbol")?.id;
       map.addLayer({ id: "barrios-fill", type: "fill", source: "barrios", paint: { "fill-color": ["match", ["get", "tone"], 0, tones[0], 1, tones[1], tones[1]], "fill-opacity": 0.55 } }, firstLabel);
     });
 
-    // Etiquetas HTML: usan las tipografías de la marca y no dependen de glifos del mapa base.
     const markers = zones.features.map((f) => {
       const label = document.createElement("span");
       label.textContent = f.properties.name;
@@ -65,12 +61,9 @@ export default function ZonesMapCanvas({ zones }: { zones: Zones }) {
     };
   }, [zones]);
 
-  // El CSS de MapLibre fuerza position:relative en su contenedor (le gana a las utilidades de Tailwind),
-  // por eso el contenedor llena a un padre absoluto con h-full en vez de ser absoluto él mismo.
   return (
     <div className="absolute inset-0">
       <div ref={el} className="h-full w-full" role="region" aria-label={t("zones.mapAria")} />
     </div>
   );
 }
-

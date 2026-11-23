@@ -23,17 +23,14 @@ function apply(theme: "light" | "dark") {
   try {
     localStorage.setItem(KEY, theme);
   } catch {
-    /* ignore */
   }
 }
 
-// Un solo botón sol/luna (en el footer). Por defecto toma el tema del sistema; al tocarlo, queda la elección guardada.
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
-    // Sin elección guardada, sigue al sistema también si cambia con la página abierta.
     const mq = matchMedia("(prefers-color-scheme: dark)");
     const onChange = (e: MediaQueryListEvent) => {
       if (hasChoice()) return;

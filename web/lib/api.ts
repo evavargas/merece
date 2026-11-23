@@ -14,8 +14,6 @@ export type Product = {
   sortOrder: number;
 };
 
-// Display order of the menu sections = order of this list. Their Spanish texts (title, neon phrases) are in lib/i18n/es.ts
-// under `category.<id>.*`. `neonTone` = neon color.
 export const CATEGORIES = [
   { id: "combos", neonTone: "accent" },
   { id: "coffees", neonTone: "accent" },
@@ -30,16 +28,13 @@ export type Zone = {
 };
 export type Zones = { type: "FeatureCollection"; features: Zone[] };
 
-// Formato internacional sin "+" ni el 0 local (097 625 315 → 59897625315), como pide wa.me.
 export const WHATSAPP_NUMBER = "59897625315";
 export const whatsappUrl = (text: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 
 export const INSTAGRAM_URL = "https://www.instagram.com/merece.singluten/";
 
-// Server-side: el navegador usa el rewrite de /api (next.config.ts).
 const API_URL = process.env.API_URL ?? "http://localhost:4000";
 
-// Los cambios del admin invalidan la caché al instante (app/revalidate/route.ts); esto es solo la red de seguridad.
 const SAFETY_REVALIDATE = 3600;
 
 export async function getProducts(): Promise<Product[] | null> {
@@ -62,7 +57,6 @@ export async function getZones(): Promise<Zones | null> {
 
 export const formatPriceLabel = (price: number | null) => (price === null ? t("price.ask") : `$ ${formatPrice(price)}`);
 
-// Combos: categoría DB `combos`, nombre "Combo …", o "… + Café".
 export function isComboProduct(p: Pick<Product, "name" | "category">) {
   const n = p.name.trim();
   return p.category === "combos" || /^combo\b/i.test(n) || /\+\s*café$/i.test(n) || /\+\s*cappu/i.test(n);

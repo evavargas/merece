@@ -10,7 +10,6 @@ export function AmericanoDialog({
   onCancel,
   onConfirm,
 }: {
-  /** Nombre del producto/combo, solo como contexto (ej. "Combo Roll + Cappu"). */
   context?: string;
   onCancel: () => void;
   onConfirm: (temp: DrinkTemp) => void;

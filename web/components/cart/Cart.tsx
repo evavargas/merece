@@ -55,12 +55,10 @@ export function productIsRolls(p: Product) {
   return /\brolls?\b/i.test(`${p.name} ${p.description ?? ""}`);
 }
 
-/** Combo Roll + Cappu: cappuccino fijo caliente; solo se customiza el roll (+ leche). */
 export function productIsRollCappuCombo(p: Product) {
   return /\broll/i.test(p.name) && /cappu/i.test(p.name);
 }
 
-/** 6 mini cookies + Cappu: cappuccino fijo; solo eligen leche. */
 export function productIsCookiesCappuCombo(p: Product) {
   return /cookie/i.test(p.name) && /cappu/i.test(p.name);
 }
@@ -69,7 +67,6 @@ export function productIsAmericano(p: Product) {
   return /americano/i.test(p.name);
 }
 
-/** Combos donde eligen el café. No incluye combos con cappu fijo. */
 export function productIsCoffeeCombo(p: Product) {
   if (productIsRollCappuCombo(p) || productIsCookiesCappuCombo(p)) return false;
   const n = `${p.name} ${p.description ?? ""}`;

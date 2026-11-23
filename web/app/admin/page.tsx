@@ -7,7 +7,7 @@ import { formatPrice, parsePrice } from "@/lib/price";
 import { CATEGORIES, isComboProduct, type Category, type Product } from "@/lib/api";
 import { t, tError } from "@/lib/i18n";
 
-const DESCRIPTION_MAX = 300; // igual que el límite del API y la base
+const DESCRIPTION_MAX = 300;
 
 class Unauthorized extends Error {}
 
@@ -20,7 +20,6 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
-// Where a product shows up on the landing: name-based combos go in "combos" whatever their stored category.
 const displayCategory = (p: Pick<Product, "name" | "category">): Category => (isComboProduct(p) ? "combos" : p.category);
 const bySortOrder = (a: Product, b: Product) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name);
 
@@ -84,7 +83,6 @@ function Panel({ onLogout }: { onLogout: () => void }) {
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"productos" | "barrios">("productos");
 
-  // Cualquier 401 devuelve al login; el resto se muestra como mensaje.
   const guard = useCallback(async <T,>(fn: () => Promise<T>): Promise<T | undefined> => {
     try {
       setError("");
@@ -104,7 +102,6 @@ function Panel({ onLogout }: { onLogout: () => void }) {
 
   const replace = (p: Product) => setProducts((all) => all.map((x) => (x.id === p.id ? p : x)));
 
-  // Swaps a product with its neighbour inside its section and saves the whole section order in one request.
   const move = (cat: Category, id: string, dir: -1 | 1) => guard(async () => {
     const ids = products.filter((p) => displayCategory(p) === cat).sort(bySortOrder).map((p) => p.id);
     const from = ids.indexOf(id);
@@ -210,7 +207,7 @@ function Row({ product: p, canUp, canDown, onMove, onSave, onPhoto, onDelete }: 
   return (
     <li className="grid grid-cols-[64px_1fr] items-center gap-x-4 gap-y-3 rounded-2xl bg-card p-3 sm:grid-cols-[64px_1fr_auto_auto_auto]">
       <label className="relative flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-accent text-center text-[11px] font-bold leading-tight text-on-color focus-within:outline focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-ring">
-        {/* eslint-disable-next-line @next/next/no-img-element -- miniatura de admin, no necesita optimización */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         {p.imageUrl ? <img src={p.imageUrl} alt="" className="h-full w-full object-cover" /> : t("admin.addPhoto")}
         <span className="sr-only">{t("admin.changePhoto", { name: p.name })}</span>
         <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) void run(() => onPhoto(f)); e.target.value = ""; }} />
@@ -263,7 +260,6 @@ function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Cate
     if (!price.ok) return setPriceError(price.error);
     setPriceError("");
     const rawName = String(f.get("name")).trim();
-    // Hasta aplicar migration 0004, combos se guardan como pastelería con nombre "Combo …".
     const name = category === "combos" && !/^combo\b/i.test(rawName) ? `Combo ${rawName}` : rawName;
     const savedCategory: Category = category === "combos" ? "desserts" : category;
     await onCreate({ name, category: savedCategory, price: price.value, stock: Number(f.get("stock") || 0) });
@@ -287,7 +283,6 @@ function NewProduct({ onCreate }: { onCreate: (p: { name: string; category: Cate
 
 type Barrio = { id: string; name: string; enabled: boolean; shipping: number | null };
 
-// Una sola selección que se guarda al presionar "Actualizar" (no al marcar cada barrio).
 function Zones({ guard }: { guard: <T>(fn: () => Promise<T>) => Promise<T | undefined> }) {
   const [barrios, setBarrios] = useState<Barrio[]>([]);
   const [saved, setSaved] = useState<Set<string>>(new Set());

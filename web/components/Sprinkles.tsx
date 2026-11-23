@@ -1,5 +1,3 @@
-// Miguitas y puntitos sueltos de decoración. Van en los márgenes (no pisan el texto centrado) y flotan suave.
-// x/y en %, w/h en px, r = rotación base, t = índice en `tones`, d = desfase de la animación.
 const ITEMS = [
   { x: 6, y: 14, w: 16, h: 6, r: -25, t: 0, d: "0s", m: true },
   { x: 14, y: 42, w: 8, h: 8, r: 0, t: 1, d: "1.2s", m: false },

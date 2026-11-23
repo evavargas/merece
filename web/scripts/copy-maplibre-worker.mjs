@@ -1,4 +1,3 @@
-// El empaquetador rompe el worker de MapLibre; se sirve como archivo estático desde /maplibre/.
 import { copyFileSync, mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";

@@ -1,5 +1,4 @@
 import { t as translate } from "./i18n/index.ts";
-// Precios en pesos uruguayos con 2 decimales. Formato es-UY: "." miles, "," decimales (ej: 1.250,50).
 export const MAX_PRICE = 1_000_000;
 
 export type ParsedPrice = { ok: true; value: number | null } | { ok: false; error: string };
@@ -12,12 +11,12 @@ export function formatPrice(n: number): string {
 }
 
 const INT = String.raw`(\d+|\d{1,3}(?:\.\d{3})+)`;
-const WITH_COMMA = new RegExp(`^${INT}(?:,(\\d{1,2}))?$`); // 1250 · 1.250 · 1.250,5 · 1.250,50
-const WITH_DOT = /^(\d+)\.(\d{1,2})$/; // 12.5 · 12.50 (el punto con 1-2 dígitos no puede ser de miles)
+const WITH_COMMA = new RegExp(`^${INT}(?:,(\\d{1,2}))?$`);
+const WITH_DOT = /^(\d+)\.(\d{1,2})$/;
 
 export function parsePrice(input: string): ParsedPrice {
   const t = input.trim().replace(/^\$\s*/, "").replace(/\s/g, "");
-  if (t === "") return { ok: true, value: null }; // vacío = "Consultar"
+  if (t === "") return { ok: true, value: null };
 
   const m = WITH_COMMA.exec(t) ?? WITH_DOT.exec(t);
   if (!m) return { ok: false, error: translate("price.invalid") };

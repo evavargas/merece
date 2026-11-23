@@ -1,11 +1,6 @@
-// Genera supabase/barrios_seed.sql con los 62 barrios de Montevideo (polígonos simplificados).
-// Fuente: barrios de la Intendencia de Montevideo (datos abiertos), vía el espejo cecimargolis/mapas-montevideo.
-// Uso: node scripts/build-barrios.mjs && supabase db query --linked -f supabase/barrios_seed.sql
-// El seed no pisa `enabled` de barrios ya cargados: las zonas con entrega se gestionan desde /admin.
 import { writeFileSync } from "node:fs";
 
 const SOURCE = "https://raw.githubusercontent.com/cecimargolis/mapas-montevideo/main/barrios.geojson";
-// Zonas habilitadas solo la primera vez que se carga cada barrio.
 const INITIAL_ENABLED = ["POCITOS", "PUNTA CARRETAS", "PARQUE RODO", "PALERMO", "CORDON", "CENTRO", "TRES CRUCES", "BUCEO", "PQUE BATLLE VILLA DOLORES", "BARRIO SUR", "CIUDAD VIEJA"];
 const NAMES = {
   "BANADOS DE CARRASCO": "Bañados de Carrasco", "CAPURRO BELLA VISTA": "Capurro - Bella Vista", "CASABO PAJAS BLANCAS": "Casabó - Pajas Blancas",
@@ -22,7 +17,6 @@ const slug = (k) => k.toLowerCase().replace(/\s+/g, "-");
 
 const gj = await (await fetch(SOURCE)).json();
 
-// Douglas–Peucker: ~3 m de tolerancia alcanza para un mapa de landing.
 function dp(pts, tol) {
   if (pts.length < 3) return pts;
   const [a, b] = [pts[0], pts.at(-1)];
@@ -34,7 +28,6 @@ function dp(pts, tol) {
   });
   return max > tol ? [...dp(pts.slice(0, idx + 1), tol).slice(0, -1), ...dp(pts.slice(idx), tol)] : [a, b];
 }
-// Un anillo cerrado tiene inicio == fin (la "recta" degenera): se parte en el punto más lejano del inicio.
 function simplify(ring, tol) {
   const far = ring.reduce((best, p, i) => (Math.hypot(p[0] - ring[0][0], p[1] - ring[0][1]) > best[0] ? [Math.hypot(p[0] - ring[0][0], p[1] - ring[0][1]), i] : best), [0, 0])[1];
   const out = [...dp(ring.slice(0, far + 1), tol).slice(0, -1), ...dp(ring.slice(far), tol)];
@@ -42,7 +35,6 @@ function simplify(ring, tol) {
 }
 const round = (p) => p.map((v) => +v.toFixed(5));
 
-// Centro de masa del anillo más grande (área con signo); alcanza para barrios casi convexos.
 function centroid(ring) {
   let a = 0, x = 0, y = 0;
   for (let i = 0; i < ring.length - 1; i++) {

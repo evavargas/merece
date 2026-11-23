@@ -1,47 +1,31 @@
 # Merece
 
-Landing de la pastelería sin gluten **Merece** (Montevideo) + panel `/admin` mínimo para controlar stock, precios y fotos.
+Landing de la pastelería sin gluten **Merece** (Montevideo) y panel `/admin` para stock, precios, orden de la carta, fotos y zonas de entrega.
 
 ```
-web/        Next.js 16 + Tailwind 4 — landing y /admin
-api/        Hono (Node) — API de productos y login por clave
-supabase/   Migración SQL (tabla + bucket de fotos) y seed
-design/     DESIGN.md, contexto del proyecto, logos y mockup original
+web/        Next.js 16 + Tailwind 4: landing y /admin
+api/        Hono (Node): API de productos y barrios, login por clave
+supabase/   Migraciones SQL y seeds
+design/     Logos y maquetas originales
 ```
 
 ## Puesta en marcha
 
-1. Crear un proyecto en [Supabase](https://supabase.com) y correr `supabase/migrations/0001_products.sql` (y opcionalmente `supabase/seed.sql`) en el SQL Editor.
-2. `cp api/.env.example api/.env` y completar `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD` y `SESSION_SECRET` (`openssl rand -hex 32`).
-3. `cp web/.env.example web/.env.local` (por defecto apunta a `http://localhost:4000`).
-4. `npm install && npm run dev` → landing en <http://localhost:3000>, panel en <http://localhost:3000/admin>.
+1. En [Supabase](https://supabase.com), correr en el SQL Editor las migraciones de `supabase/migrations/` en orden (y opcionalmente `supabase/seed.sql`).
+2. `cp api/.env.example api/.env` y completar los valores (`SESSION_SECRET`: `openssl rand -hex 32`).
+3. `cp web/.env.example web/.env.local`.
+4. `npm install && npm run dev`: landing en <http://localhost:3000>, panel en <http://localhost:3000/admin>.
 
-`npm test` corre los tests del API; `npm run typecheck` y `npm run build` validan ambos paquetes.
+`npm test`, `npm run typecheck` y `npm run build` validan ambos paquetes.
 
-## Cómo funciona
+## Textos
 
-- **Sin usuarios:** `/admin` pide una clave (`ADMIN_PASSWORD`). El API la compara en tiempo constante y emite una cookie `httpOnly` de 12 h. 10 intentos fallidos bloquean la IP 15 min.
-- **Un solo origen:** Next reescribe `/api/*` hacia el API (`API_URL`), así la cookie no necesita CORS.
-- **Stock:** número de unidades por producto; `0` se muestra como "Sin stock por hoy". Precios en UYU con 2 decimales (formato `1.250,00`); precio vacío se muestra como "Consultar".
-- **Orden de la carta:** en `/admin → Productos` cada categoría se ordena con las flechas ▲▼ (se guarda al instante en `sort_order`). Las secciones salen en este orden: combos, cafés, postres, tortas a pedido.
-- **Stock en la carta y en el pedido:** cada tarjeta muestra "Quedan N" y el mensaje de WhatsApp lista cada producto con sus opciones y el stock disponible.
-- **Textos (i18n):** todos los textos de la landing están en `web/lib/i18n/es.ts` y se usan con `t("clave")`. El código, la API y la base guardan identificadores en inglés (categorías `combos`, `coffees`, `desserts`, `made_to_order`; opciones del carrito `whole`, `oat`, `pickup`, `delivery`…) y los errores del API son códigos (`wrong_password`); el español vive solo en el catálogo. Para otro idioma, crear otro archivo con las mismas claves y elegirlo en `lib/i18n/index.ts`.
-- **Fotos:** JPG/PNG/WebP hasta 5 MB, se guardan en el bucket público `products` de Supabase.
-- La landing se regenera cada 30 s, por eso los cambios del panel tardan hasta medio minuto en verse.
-- La `service_role` key vive solo en el API; la tabla tiene RLS activado y sin políticas.
+Todos los textos viven en `web/lib/i18n/es.ts` y se usan con `t("clave")`. Código, API y base guardan identificadores en inglés. Para sumar un idioma, crear otro archivo con las mismas claves y elegirlo en `web/lib/i18n/index.ts`.
 
 ## Deploy
 
-Antes de publicar una versión con cambios de base, correr las migraciones nuevas en el SQL Editor de Supabase. En particular `supabase/migrations/0006_english_category_values.sql` renombra las categorías (`pasteleria`→`desserts`, `acompanar`→`coffees`, `a_pedido`→`made_to_order`) **antes** de desplegar el API y la web que esperan los valores nuevos.
+`web/` en Vercel (variable `API_URL`) y `api/` en cualquier host Node (`npm run build -w api && npm start -w api`). Las migraciones nuevas se corren en Supabase **antes** de publicar el código que las necesita.
 
-`web/` en Vercel (variable `API_URL`). `api/` en cualquier host Node (`npm run build -w api && npm start -w api`).
+## Zonas de entrega
 
-## Mapa y barrios
-
-La tabla `barrios` guarda los 63 barrios de Montevideo con su polígono. En `/admin` → **Barrios** se marcan los que tienen entrega y se guarda todo junto con **Actualizar**; el mapa y la leyenda de la landing muestran solo los marcados, y los colores se asignan para que dos barrios linderos nunca coincidan.
-
-- Mapa interactivo con MapLibre sobre [OpenFreeMap](https://openfreemap.org) (gratis, sin API key, datos de OpenStreetMap).
-- Carga inicial: `node scripts/build-barrios.mjs && supabase db query --linked -f supabase/barrios_seed.sql` (no pisa lo ya habilitado). Los polígonos vienen de los barrios de la Intendencia de Montevideo, vía el espejo `cecimargolis/mapas-montevideo`, que no declara licencia: conviene confirmar la de la Intendencia antes de lanzar.
-- Migraciones: `supabase/migrations/0001…0005`; se aplican en orden con `supabase db query --linked -f <archivo>`.
-- Precio de envío del día: columna `barrios.shipping` (migración `0005`). Se edita en `/admin` → Barrios (fuente de verdad = la base).
-- El worker de MapLibre se copia a `web/public/maplibre/` en `predev`/`prebuild` (no se versiona).
+Carga inicial de barrios: `node scripts/build-barrios.mjs && supabase db query --linked -f supabase/barrios_seed.sql`. Los polígonos salen de los barrios de la Intendencia de Montevideo, vía el espejo `cecimargolis/mapas-montevideo`, que no declara licencia: conviene confirmar la de la Intendencia antes de lanzar.

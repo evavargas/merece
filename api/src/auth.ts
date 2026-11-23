@@ -11,8 +11,6 @@ const SESSION_SECONDS = 60 * 60 * 12;
 const MAX_FAILS = 10;
 const WINDOW_MS = 15 * 60 * 1000;
 
-// shortcut: contador en memoria por IP, se pierde al reiniciar y no se comparte entre instancias;
-// pasar a Redis/Upstash si el API corre en más de una instancia.
 const fails = new Map<string, { count: number; resetAt: number }>();
 
 const digest = (s: string) => createHash("sha256").update(s).digest();

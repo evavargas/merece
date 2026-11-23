@@ -6,7 +6,6 @@ import { useEgg } from "@/components/Egg";
 import { Wordmark } from "@/components/Wordmark";
 import { t } from "@/lib/i18n";
 
-// Barra superior fija: logo, enlace a Productos (desde md) y carrito. Sin fondo de color: solo un blur suave para que se lea sobre el contenido.
 export function SiteNav() {
   const { tapMerece } = useEgg();
 

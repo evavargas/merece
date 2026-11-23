@@ -1,8 +1,4 @@
-// Spanish catalog (Rioplatense). Every landing text lives here; code, data and API stay in English.
-// Add another locale by creating a sibling file with the same keys and picking it in ./index.ts.
-// Conventions: flat dotted keys; `{name}` placeholders; `<key>_one` is the singular form when `count === 1`; arrays are phrase lists.
 export const es = {
-  // brand & site metadata
   "brand.name": "Merece",
   "site.title": "Merece · Pastelería sin gluten en Montevideo",
   "site.titleTemplate": "%s · Merece",
@@ -10,7 +6,6 @@ export const es = {
   "site.manifestName": "Merece · Pastelería sin gluten",
   "site.manifestDescription": "Pastelería clásica y artesanal sin gluten. Delivery en Montevideo.",
 
-  // navigation & floating bar
   "nav.homeAria": "Merece, ir al inicio",
   "nav.products": "Productos",
   "bar.products": "Productos",
@@ -22,14 +17,12 @@ export const es = {
   "theme.light": "Tema claro",
   "theme.dark": "Tema oscuro",
 
-  // hero
   "hero.tagline1": "Pastelería Sin Gluten",
   "hero.tagline2": "&",
   "hero.tagline3": "Café de especialidad",
   "egg.playAria": "Jugá a Mi primer espresso",
   "egg.playTitle": "Mi primer espresso",
 
-  // menu
   "menu.neon": ["Te lo merecés", "¿Qué se te antoja hoy?"],
   "menu.loadError": "No pudimos cargar la carta ahora. Escribinos por WhatsApp y te contamos qué hay.",
   "category.combos.title": "Combos del día",
@@ -42,7 +35,6 @@ export const es = {
   "category.made_to_order.neon": ["Para momentos especiales"],
   "category.made_to_order.ruled": ["48 hs de anticipación"],
 
-  // product card
   "price.ask": "Consultar",
   "product.stock": "Quedan {count}",
   "product.stock_one": "Queda {count}",
@@ -53,7 +45,6 @@ export const es = {
   "product.choose": "Elegir",
   "product.askMessage": "Hola Merece! Quería consultar por: {name}",
 
-  // dialogs
   "common.cancel": "Cancelar",
   "common.close": "Cerrar",
   "common.add": "Agregar",
@@ -86,7 +77,6 @@ export const es = {
   "milk.lactose_free": "Deslactosada",
   "milk.oat": "Vegetal (avena)",
 
-  // cart
   "cart.title": "Mi pedido",
   "cart.ariaEmpty": "Mi pedido",
   "cart.ariaCount": "Mi pedido, {count} productos",
@@ -118,7 +108,6 @@ export const es = {
   "extra.drinkHot": "café caliente",
   "extra.drinkCold": "café frío",
 
-  // WhatsApp order message (sent as plain text; *bold* is WhatsApp markup)
   "msg.emptyOrder": "Hola Merece! Quiero hacer un pedido.\nPago por transferencia.",
   "msg.greeting": "Hola Merece! Quiero hacer este pedido:",
   "msg.itemsHeading": "*Pedido*",
@@ -136,7 +125,6 @@ export const es = {
   "msg.payment": "Pago por transferencia.",
   "msg.advanceNote": "Acepto el mínimo de 48 horas de anticipación para tortas a pedido.",
 
-  // sections
   "steps.title": "Pedí en tres pasos",
   "steps.one": "Armá tu pedido",
   "steps.two": "Confirmá tu compra",
@@ -152,7 +140,6 @@ export const es = {
   "footer.whatsappAria": "WhatsApp de Merece",
   "footer.rights": "© {year} Merece. Todos los derechos reservados.",
 
-  // minigame page (/mi-primer-espresso)
   "game.milkSpill": "Se derramó. Cortá antes de que la espuma llegue al borde.",
   "game.milkWin": "Lo conseguiste. Esa es la textura de un capuchino.",
   "game.milkShort": "Quedó corto. A la leche le falta espuma para un capuchino.",
@@ -240,7 +227,6 @@ export const es = {
   "price.invalid": "Ingresá un precio válido, con hasta 2 decimales (ej: 1.250,00)",
   "price.max": "El máximo es $ {max}",
 
-  // admin panel and the API error codes shown there
   "admin.pageTitle": "Admin",
   "admin.loading": "Cargando…",
   "admin.password": "Clave",

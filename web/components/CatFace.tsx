@@ -2,11 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Hasta dónde se corren las pupilas dentro del ojo (unidades del viewBox).
 const MAX_X = 4;
 const MAX_Y = 3;
 
-// Carita del gato del minijuego (design/espresso-game). Las pupilas siguen al puntero.
 export function CatFace({ className = "" }: { className?: string }) {
   const ref = useRef<SVGSVGElement>(null);
   const [look, setLook] = useState<[number, number]>([0, 0]);

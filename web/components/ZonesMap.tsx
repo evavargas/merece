@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import type { Zones } from "@/lib/api";
 
-// MapLibre pesa ~800 KB: se descarga recién cuando el mapa está por entrar en pantalla.
 const Canvas = dynamic(() => import("./ZonesMapCanvas"), { ssr: false });
 
 export function ZonesMap({ zones }: { zones: Zones }) {

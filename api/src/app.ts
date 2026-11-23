@@ -14,5 +14,4 @@ app.onError((err, c) => {
   return c.json({ error: "internal_error" }, 500);
 });
 
-// Vercel (Hono zero-config) toma este archivo como entrada y exige el export por defecto.
 export default app;

@@ -5,7 +5,6 @@ import { formatPrice } from "./price.ts";
 
 export type OrderLine = { product: Pick<Product, "name" | "price" | "stock" | "category">; qty: number } & CartOpts;
 
-/** Human labels of the options chosen for a line (used in the cart and in the WhatsApp message). */
 export function lineExtras(l: OrderLine): string[] {
   const bits: string[] = [];
   if (l.coffee) bits.push(t(`coffee.${l.coffee}`));
@@ -15,7 +14,6 @@ export function lineExtras(l: OrderLine): string[] {
   return bits;
 }
 
-/** WhatsApp text, in blocks: greeting, items (with options and stock), summary, payment and notes. */
 export function buildOrderMessage(lines: OrderLine[], fulfillment: Fulfillment, zone: { name: string } | undefined, shipping: number | null): string {
   if (lines.length === 0) return t("msg.emptyOrder");
 

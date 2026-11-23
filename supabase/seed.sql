@@ -1,4 +1,3 @@
--- Productos mencionados en el contexto del proyecto. Precios y stock se cargan desde /admin.
 insert into products (name, description, category, sort_order) values
   ('Rolls de canela',     'Clásicos, esponjosos y con mucha canela y glaseados!.',        'desserts', 1),
   ('Budín de naranja',    'Húmedo y con aroma a naranja. Tev va a encantar',                   'desserts', 2),

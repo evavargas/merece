@@ -1,6 +1,5 @@
 import { t } from "@/lib/i18n";
 
-// "Merece" en Bagel Fat One, letras alineadas en la línea base; la M va bañada en lavanda.
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
     <span className={`font-display inline-flex leading-none ${className}`} aria-label={t("brand.name")} role="img">

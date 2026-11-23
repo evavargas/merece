@@ -22,7 +22,6 @@ const STEPS = [
   { key: "steps.three", Icon: DeliveryIcon },
 ] as const;
 
-// Datos estructurados para buscadores. Sin dirección (solo delivery) y sin afirmaciones de aptitud para celíacos.
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Bakery",
@@ -64,7 +63,6 @@ export default async function Home() {
 
           <section id="carta" className="carta relative scroll-mt-20 bg-carta pb-0 pt-36 text-carta-foreground sm:pt-28">
             <DripBand />
-            {/* Gotas largas de los bordes, de distinta altura (no simétricas). Desde 1280 px: izquierda 280 y derecha 196. Debajo de 1280: una sola, más corta, a la izquierda. */}
             <LongDrip length={280} neck={18} r={12} className="left-3 hidden min-[1280px]:block" />
             <LongDrip length={196} neck={16} r={11} className="right-3 hidden min-[1280px]:block" />
             <LongDrip length={124} neck={14} r={9.5} className="left-4 min-[1280px]:hidden" />

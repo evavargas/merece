@@ -44,10 +44,9 @@ export const products = new Hono()
   .get("/", async (c) => {
     const { data, error } = await supabase().from("products").select("*").order("sort_order").order("name");
     if (error) return c.json({ error: "read_failed" }, 500);
-    c.header("Cache-Control", "no-store"); // la caché la maneja la web (revalidación por etiqueta); un CDN en el medio la dejaba desactualizada
+    c.header("Cache-Control", "no-store");
     return c.json((data as Row[]).map(toDto));
   })
-  // Display order: `ids` come in the order the admin wants; each gets sort_order = its position. Registered before "/:id" routes.
   .put("/order", requireAdmin, async (c) => {
     const body = orderInput.safeParse(await c.req.json().catch(() => null));
     if (!body.success) return c.json({ error: "invalid_input" }, 400);
@@ -69,7 +68,6 @@ export const products = new Hono()
     const id = idParam.safeParse(c.req.param("id"));
     const body = productInput.partial().safeParse(await c.req.json().catch(() => null));
     if (!id.success || !body.success) return c.json({ error: "invalid_input" }, 400);
-    // partial() conserva los defaults de zod; solo se actualiza lo que vino en el body.
     const sent = await c.req.json();
     const patch = Object.fromEntries(Object.entries(body.data).filter(([k]) => k in sent));
     const { data, error } = await supabase().from("products").update(toColumns(patch)).eq("id", id.data).select().maybeSingle();

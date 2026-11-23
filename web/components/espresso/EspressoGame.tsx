@@ -3,9 +3,6 @@
 import { Component } from "react";
 import { t } from "@/lib/i18n";
 
-// Minijuego "Mi primer espresso": tres niveles de toques a tiempo (espresso, leche, latte art).
-// Portado de design/espresso-game/Juego.dc.html. El sonido se sintetiza con Web Audio.
-
 type Pt = [number, number];
 type Phase = "intro" | "ready" | "pouring" | "result";
 type Stage = "base" | "blob" | "cut" | "pull" | "done";
@@ -26,7 +23,6 @@ export class EspressoGame extends Component<object, State> {
   _g = 0;
   _lastPaint = 0;
   _ctx: AudioContext | null = null;
-  // Se crean en ensureAudio() con el primer toque; antes de eso los usos quedan dentro de try/catch.
   _sfxBus!: GainNode;
   _musBus!: GainNode;
   _noise!: AudioBuffer;
@@ -148,10 +144,6 @@ export class EspressoGame extends Component<object, State> {
     };
   }
 
-  // Gramos en la taza segun los segundos reales: unas gotas y despues un hilo parejo.
-  // 36 g a los ~9.7 s reales (el reloj en pantalla va x3, o sea ~29 s de espresso).
-  // Nivel 2: la leche sube de 33 % a 100 % de la jarra. Primero lento (entra aire), despues parejo.
-  // Llega a la meta (66 %) a los ~8 s reales; se derrama a los ~15 s.
   flow2(t: number) {
     if (t < 1.5) return 0.33 + 0.03 * (t / 1.5) * (t / 1.5);
     return 0.36 + (t - 1.5) * 0.0462;
@@ -215,9 +207,6 @@ export class EspressoGame extends Component<object, State> {
     this.setState({ phase: 'result', grams: g, simT: this._t * 3, score, win, resultMsg });
   }
 
-  // ---------------------------------------------------------------- nivel 3: el servido (latte art)
-  // Cuatro toques: 1 frena la base, 2 frena la mancha, 3 corta, y despues el dibujado sale solo.
-  // Las cifras son propuestas de juego, no datos de barismo.
   fresh3(): S3 {
     return { stage: 'base', t0: 0, fill: 0.2, ratio: 0, cutX: 200, pullQ: 0, b1: 0, b2: 0, b3: 0, dev: 0, spill: false, avg: 0 };
   }
@@ -366,7 +355,6 @@ export class EspressoGame extends Component<object, State> {
       m.bp.frequency.setTargetAtTime(f, now, 0.08);
       m.g.gain.setTargetAtTime(gain, now, 0.1);
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -380,7 +368,6 @@ export class EspressoGame extends Component<object, State> {
       m.g.gain.setTargetAtTime(0, now, 0.05);
       m.s.stop(now + 0.3);
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -390,12 +377,9 @@ export class EspressoGame extends Component<object, State> {
     try {
       if (this._ctx) this._ctx.close();
     } catch (e) {
-      /* sin audio */
     }
   }
 
-  // ---------------------------------------------------------------- audio
-  // Todo se sintetiza con Web Audio: sin archivos. Solo arranca despues de un toque de la persona.
   ensureAudio() {
     try {
       if (!this._ctx) {
@@ -490,7 +474,6 @@ export class EspressoGame extends Component<object, State> {
       const t = this._ctx!.currentTime;
       this.blip(this._sfxBus, t, 880, 0.12, 0.06);
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -502,7 +485,6 @@ export class EspressoGame extends Component<object, State> {
       this.click(this._sfxBus, t, 2600, 0.03, 0.35);
       this.click(this._sfxBus, t + 0.05, 1400, 0.04, 0.2);
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -513,7 +495,6 @@ export class EspressoGame extends Component<object, State> {
       this.thump(this._sfxBus, t, 110, 42, 0.18, 0.6);
       this.click(this._sfxBus, t, 1800, 0.03, 0.3);
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -522,7 +503,6 @@ export class EspressoGame extends Component<object, State> {
       if (!this._ctx) return;
       const ctx = this._ctx!;
       const t = ctx.currentTime;
-      // zumbido de la bomba
       const lp = ctx.createBiquadFilter();
       lp.type = 'lowpass';
       lp.frequency.value = 300;
@@ -542,7 +522,6 @@ export class EspressoGame extends Component<object, State> {
       pg.connect(this._sfxBus);
       o1.start(t);
       o2.start(t);
-      // agua cayendo: ruido filtrado, el tono sube a medida que se llena
       const s = ctx.createBufferSource();
       s.buffer = this._noise;
       s.loop = true;
@@ -575,7 +554,6 @@ export class EspressoGame extends Component<object, State> {
         this._nextDrip = now + 0.18 + Math.random() * 0.3;
       }
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -625,7 +603,6 @@ export class EspressoGame extends Component<object, State> {
       st.g.gain.setTargetAtTime(0.15 + 0.03 * Math.sin(t * 6), now, 0.05);
       st.o.frequency.setTargetAtTime(65 + (p - 0.33) * 60, now, 0.1);
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -641,7 +618,6 @@ export class EspressoGame extends Component<object, State> {
       st.s.stop(now + 0.4);
       st.o.stop(now + 0.4);
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -656,13 +632,11 @@ export class EspressoGame extends Component<object, State> {
       p.o1.stop(now + 0.3);
       p.o2.stop(now + 0.3);
       p.s.stop(now + 0.3);
-      // dos gotas sueltas despues de cortar
       if (this.canSfx()) {
         this.blip(this._sfxBus, now + 0.2, 760, 0.08, 0.07);
         this.blip(this._sfxBus, now + 0.5, 700, 0.06, 0.07);
       }
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -694,11 +668,9 @@ export class EspressoGame extends Component<object, State> {
         o.stop(t + 0.7);
       }
     } catch (e) {
-      /* sin audio */
     }
   }
 
-  // ---- musica lo-fi: 72 bpm, 4 compases (Dm9, G9, Cmaj9, Am9) que se repiten, con swing, hi-hat suelto y crujido de vinilo
   startMusic() {
     try {
       if (!this._ctx || this._musicTimer) return;
@@ -742,7 +714,6 @@ export class EspressoGame extends Component<object, State> {
         this._crackleSrc = null;
       }
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -758,7 +729,6 @@ export class EspressoGame extends Component<object, State> {
         this._step = (this._step + 1) % 32;
       }
     } catch (e) {
-      /* sin audio */
     }
   }
 
@@ -847,7 +817,6 @@ export class EspressoGame extends Component<object, State> {
     }
   }
 
-  // ---------------------------------------------------------------- vista
   renderVals1(): Vals {
     const s = this.state;
     const phase = s.phase;
@@ -864,7 +833,6 @@ export class EspressoGame extends Component<object, State> {
     const sad = result && !s.win;
     const happy = result && s.win;
 
-    // palanca y brazo del gato (el gato esta escalado x1.3 con pies en y=358)
     const endX = 286;
     const endY = pouring ? 122 : 206;
     const S = 1.3, CATX = 140;
@@ -873,11 +841,9 @@ export class EspressoGame extends Component<object, State> {
     const qx = (114 + px) / 2;
     const qy = (238 + py) / 2 + (pouring ? -10 : 6);
 
-    // pupilas: miran la taza (mas abajo mientras cae el cafe)
     const pdx = pouring ? 3 : 2;
     const pdy = pouring ? 2 : 1;
 
-    // flecha del cartel hacia la bolita de la palanca
     const sx = 270, sy = 378;
     const ex = 285, ey = endY + 24;
     const cx = 232, cy = (sy + ey) / 2;
@@ -945,8 +911,6 @@ export class EspressoGame extends Component<object, State> {
     };
   }
 
-  // ---------------------------------------------------------------- nivel 2: geometria de la jarra
-  // Mismas constantes que lvl2.py: pivote (305, 386), escala 1.4, inclinacion 6 grados, base 386, borde 300.
   rot(x: number, y: number): [number, number] {
     const t = 6 * Math.PI / 180;
     const dx = (x - 305) * 1.4;
@@ -1040,8 +1004,6 @@ export class EspressoGame extends Component<object, State> {
     };
   }
 
-  // ---------------------------------------------------------------- nivel 3: vista
-  // Misma geometria que lvl3.py: taza (280,178), jarra (108,332) radio 58.
   mixHex(a: string, b: string, k: number) {
     const pa = [1, 3, 5].map((i) => parseInt(a.substr(i, 2), 16));
     const pb = [1, 3, 5].map((i) => parseInt(b.substr(i, 2), 16));
@@ -1128,7 +1090,6 @@ export class EspressoGame extends Component<object, State> {
     const k = Math.min(0.8, 0.55 * Math.max(0, fill - 0.2) / 0.46);
     const rr = 62 * rho;
 
-    // a donde cae la leche (la jarra apunta ahi)
     let px = CX, py = CY + 6;
     if (stage === 'cut') px = q.cutX;
     if (stage === 'pull') py = CY + rr * (0.9 - 1.8 * q.pullQ);
@@ -1146,7 +1107,6 @@ export class EspressoGame extends Component<object, State> {
     const toes = 'M' + pt(Wx + 4, Wy - 8) + ' L' + pt(Wx + 14, Wy - 8) + ' M' + pt(Wx + 4, Wy) + ' L' + pt(Wx + 14, Wy)
       + ' M' + pt(Wx + 4, Wy + 8) + ' L' + pt(Wx + 14, Wy + 8);
 
-    // forma sobre el cafe
     let shapeD = '';
     if (stage === 'blob' || stage === 'cut') {
       shapeD = this.polyD(this.blobPts(Math.max(1, rr)));

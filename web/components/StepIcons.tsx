@@ -1,5 +1,3 @@
-// Dibujos de los tres pasos, en el estilo de la taza (trazo grueso, puntas redondeadas) con toques de lavanda y durazno.
-// El trazo toma el color del texto (currentColor); los rellenos usan los acentos de la marca.
 const base = {
   viewBox: "0 0 100 100",
   fill: "none",
@@ -10,7 +8,6 @@ const base = {
   "aria-hidden": true,
 } as const;
 
-// 1 · Armá tu pedido: bolsa con un corazón.
 export function BagIcon({ className }: { className?: string }) {
   return (
     <svg {...base} className={className}>
@@ -21,7 +18,6 @@ export function BagIcon({ className }: { className?: string }) {
   );
 }
 
-// 2 · Confirmá tu compra: globo de chat con tilde.
 export function ChatCheckIcon({ className }: { className?: string }) {
   return (
     <svg {...base} className={className}>
@@ -31,7 +27,6 @@ export function ChatCheckIcon({ className }: { className?: string }) {
   );
 }
 
-// 3 · Te lo enviamos: bici de reparto con una caja atrás.
 export function DeliveryIcon({ className }: { className?: string }) {
   return (
     <svg {...base} className={className}>

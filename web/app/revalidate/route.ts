@@ -5,7 +5,6 @@ const ALLOWED = new Set(["products", "zones"]);
 
 const same = (a: string, b: string) => a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 
-// El API llama acá después de cada cambio del admin; invalida la caché de la landing al instante.
 export async function POST(request: Request) {
   const secret = process.env.REVALIDATE_SECRET;
   if (!secret) return Response.json({ error: "revalidation_not_configured" }, { status: 503 });

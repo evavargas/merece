@@ -7,7 +7,6 @@ import { Cup } from "@/components/icons";
 import { Wordmark } from "@/components/Wordmark";
 import { t } from "@/lib/i18n";
 
-// Taza del hero; dos clics seguidos en “Merece” → gatito (easter egg → minijuego).
 export function HeroBrand() {
   const { revealed, tapMerece } = useEgg();
 

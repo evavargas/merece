@@ -13,7 +13,6 @@ type Row = {
   shipping: number | null;
 };
 
-// 0 = lavanda (más cerca), 1 = durazno (más lejos). Cocina entre Pocitos y Parque Rodó.
 const NEAR = new Set(["parque-rodo", "pocitos", "punta-carretas"]);
 const FAR = new Set(["cordon", "barrio-sur", "tres-cruces", "centro", "palermo"]);
 
@@ -33,7 +32,6 @@ const body = z.object({
 });
 
 export const barrios = new Hono()
-  // Público: solo las zonas habilitadas, ya como GeoJSON listo para el mapa.
   .get("/", async (c) => {
     const { data, error } = await supabase()
       .from("barrios")
@@ -59,13 +57,11 @@ export const barrios = new Hono()
       })),
     });
   })
-  // Admin: todos los barrios (sin polígonos) para la lista de activar/desactivar + precio de envío.
   .get("/all", requireAdmin, async (c) => {
     const { data, error } = await supabase().from("barrios").select("id, name, enabled, shipping").order("name");
     if (error) return c.json({ error: "read_failed" }, 500);
     return c.json(data);
   })
-  // Admin: guarda la selección completa de una vez + precios de envío en la tabla.
   .put("/", requireAdmin, async (c) => {
     const parsed = body.safeParse(await c.req.json().catch(() => null));
     if (!parsed.success) return c.json({ error: "invalid_input" }, 400);

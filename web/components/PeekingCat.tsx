@@ -1,8 +1,5 @@
 import { CatFace } from "@/components/CatFace";
 
-// Agujero en el pie del que se asoma el gato: las orejas sobresalen por encima del borde y las patitas se apoyan en el frente.
-// Decorativo; las pupilas siguen al puntero porque CatFace ya lo hace.
-// En celular va abajo y centrado, justo encima de las barras flotantes (el pie suma aire para él); desde sm, a la derecha.
 export function PeekingCat() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute bottom-[88px] left-1/2 h-9 w-28 -translate-x-1/2 sm:bottom-auto sm:left-auto sm:right-[10%] sm:top-[100px] sm:translate-x-0">

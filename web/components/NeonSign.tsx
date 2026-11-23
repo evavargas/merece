@@ -4,10 +4,8 @@ import { Fragment, useEffect, useRef, useState } from "react";
 
 const HOLD_MS = 3400;
 const OFF_MS = 320;
-// Las frases más largas que esto se dibujan más chicas para que todas ocupen un alto parecido.
 const LONG_PHRASE = 24;
 
-// Chispitas alrededor del cartel: posición, tamaño (en em, siguen el tamaño de la letra) y desfase.
 const SPARKS = [
   { left: "-3%", top: "-8%", s: "0.3em", d: "0s" },
   { left: "99%", top: "6%", s: "0.22em", d: "0.9s" },
@@ -15,7 +13,6 @@ const SPARKS = [
   { left: "3%", top: "86%", s: "0.18em", d: "2.1s" },
 ] as const;
 
-// Cartel de neón decorativo: el texto accesible va aparte (el h2 de la sección), por eso es aria-hidden.
 export function NeonSign({
   phrases,
   tone = "highlight",
@@ -51,7 +48,6 @@ export function NeonSign({
       }, HOLD_MS);
     };
 
-    // Se enciende al entrar en pantalla y se apaga al salir, así el parpadeo se ve cada vez que llega.
     const io = new IntersectionObserver(
       ([entry]) => {
         window.clearTimeout(timer);
